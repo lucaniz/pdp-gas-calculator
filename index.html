@@ -43,27 +43,27 @@
 
 <h1>PDP Gas Cost & Reward Calculator</h1>
 
-<label>Deal price per TiB/month (USD):
+<label>Deal price per TiB/month (USD): 
   <input type="number" id="dealPrice" value="2" />
 </label>
 
-<label>FIL price (USD):
-  <input type="number" id="filPrice" value="3" oninput="updateRewardFIL()" />
+<label>FIL price in USD: 
+  <input type="number" id="filPrice" value="3" oninput="updateRewards()" />
 </label>
 
-<label>Reward per 24h per byte (USD):
-  <input type="number" id="rewardUSD" value="6.06e-14" oninput="updateRewardFIL()" />
+<label>Reward per 24h per byte (FIL): 
+  <input type="number" id="rewardFIL" value="2.02e-14" step="any" oninput="updateRewards()" />
 </label>
 
-<label>Reward per 24h per byte (FIL):
-  <input type="text" id="rewardFIL" readonly />
+<label>Reward per 24h per byte (USD): 
+  <input type="text" id="rewardUSD" readonly />
 </label>
 
-<label>Number of Roots:
+<label>Number of Roots: 
   <input type="number" id="roots" value="100" />
 </label>
 
-<label>Storage Duration (months):
+<label>Storage Duration (months): 
   <input type="number" id="months" value="1" />
 </label>
 
@@ -93,6 +93,13 @@
 </table>
 
 <script>
+  function updateRewards() {
+    const filPrice = parseFloat(document.getElementById("filPrice").value);
+    const rewardFIL = parseFloat(document.getElementById("rewardFIL").value);
+    const rewardUSD = filPrice * rewardFIL;
+    document.getElementById("rewardUSD").value = isFinite(rewardUSD) ? rewardUSD.toExponential(4) : '';
+  }
+
   const sizes = [
     { label: "1000 MiB", bytes: 1048576000 },
     { label: "10000 MiB", bytes: 10485760000 },
@@ -103,22 +110,11 @@
     { label: "2500 GiB", bytes: 2684354560000 }
   ];
 
-  function updateRewardFIL() {
-    const filPrice = parseFloat(document.getElementById("filPrice").value);
-    const rewardUSD = parseFloat(document.getElementById("rewardUSD").value);
-
-    if (!isNaN(filPrice) && filPrice !== 0 && !isNaN(rewardUSD)) {
-      const rewardFIL = rewardUSD / filPrice;
-      document.getElementById("rewardFIL").value = rewardFIL.toExponential(4);
-    } else {
-      document.getElementById("rewardFIL").value = "";
-    }
-  }
-
   function calculate() {
     const dealPrice = parseFloat(document.getElementById("dealPrice").value);
     const filPrice = parseFloat(document.getElementById("filPrice").value);
     const rewardUSD = parseFloat(document.getElementById("rewardUSD").value);
+    const rewardFIL = parseFloat(document.getElementById("rewardFIL").value);
     const roots = parseFloat(document.getElementById("roots").value);
     const months = parseFloat(document.getElementById("months").value);
 
@@ -187,8 +183,8 @@
     });
   }
 
-  // initialize rewardFIL on load
-  window.onload = updateRewardFIL;
+  // Initialize calculated rewards on page load
+  updateRewards();
 </script>
 
 </body>
