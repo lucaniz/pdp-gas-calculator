@@ -81,7 +81,7 @@
   </table>
 
   <h2>Discount Table (PDP Fee)</h2>
-  <p>This table shows the PDP Fee and its discounted versions based on different discount rates. The discount is applied to the 5% PDP Fee, and the final discounted cost is displayed for each storage size.</p>
+  <p>This table shows the PDP Fee at 5% for each storage size, along with the fee after applying 5%, 10%, and 15% discounts.</p>
   <table class="discount-table">
     <thead>
       <tr>
@@ -90,7 +90,7 @@
         <th>PDP Fee (5%) with Discount (5%)</th>
         <th>PDP Fee (5%) with Discount (10%)</th>
         <th>PDP Fee (5%) with Discount (15%)</th>
-        <th>Final Discounted Cost (After 5% PDP Fee Discount)</th>
+        <th>Final Discounted Cost</th>
       </tr>
     </thead>
     <tbody>
@@ -182,12 +182,12 @@
       });
     }
 
-    // Function for calculating discounts
+    // Function for calculating discounted PDP Fee
     function calculateDiscounts(fee, discountRate) {
       return fee - (fee * (discountRate / 100));
     }
 
-    // Function for displaying discount table
+    // Function for displaying the Discount Table with correct PDP Fee logic
     function displayDiscounts() {
       const discountRates = [5, 10, 15]; // 5%, 10%, 15% discounts
 
@@ -195,7 +195,9 @@
       discountTableBody.innerHTML = "";
 
       sizes.forEach(({ label, bytes }) => {
-        const fee = rewardUSD * bytes * roots * 0.05;
+        const fee = rewardUSD * bytes * roots * 0.05;  // PDP Fee 5%
+        
+        // Create table rows for each size with calculated discounts
         const row = `
           <tr>
             <td>${label}</td>
@@ -212,8 +214,4 @@
     }
 
     // Initialize on page load
-    displayDiscounts();
-  </script>
-
-</body>
-</html>
+    display
