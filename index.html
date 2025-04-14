@@ -1,117 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Filecoin Gas Cost Calculator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 20px;
+      background: #f4f4f4;
+      padding: 20px;
     }
-    .container {
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .calculator {
       max-width: 800px;
-      margin: 0 auto;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      margin-bottom: 12px;
+    }
+    button {
+      padding: 10px 15px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
     }
-    table, th, td {
-      border: 1px solid #ddd;
-    }
     th, td {
+      border: 1px solid #ddd;
       padding: 8px;
       text-align: right;
     }
     th {
       background-color: #f2f2f2;
     }
-    input {
-      width: 100%;
-      padding: 8px;
-      margin: 5px 0;
-      box-sizing: border-box;
-    }
-    button {
-      padding: 10px 20px;
-      margin-top: 10px;
-      cursor: pointer;
+    .center {
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>Filecoin Gas Cost Calculator</h1>
-  <form id="calculator-form">
-    <label for="dealPrice">Deal Price per TiB per Month (USD):</label>
-    <input type="number" id="dealPrice" required>
-    <label for="filPrice">FIL Price (USD):</label>
-    <input type="number" id="filPrice" required>
-    <label for="rewardUsd">Reward per 24h per Byte (USD):</label>
-    <input type="number" id="rewardUsd" required>
-    <label for="rewardFil">Reward per 24h per Byte (FIL):</label>
-    <input type="number" id="rewardFil" required>
-    <label for="numRoots">Number of Roots:</label>
-    <input type="number" id="numRoots" value="100" required>
-    <button type="submit">Calculate</button>
-  </form>
+  <div class="calculator">
+    <h1>Filecoin Gas Cost Calculator</h1>
+    
+    <label>Deal price per TiB per month (USD):</label>
+    <input type="number" id="dealPrice" value="2">
 
-  <table id="results-table">
-    <thead>
-      <tr>
-        <th>Proofset Size (Bytes)</th>
-        <th>Gas Cost (FIL)</th>
-        <th>Gas Cost (USD)</th>
-        <th>Total Reward (USD)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Results will be populated here -->
-    </tbody>
-  </table>
-</div>
+    <label>FIL price (USD):</label>
+    <input type="number" id="filPrice" value="3">
 
-<script>
-  document.getElementById('calculator-form').addEventListener('submit', function(event) {
-    event.preventDefault();
+    <label>Reward per 24h per byte (USD):</label>
+    <input type="number" id="rewardUsd" value="6.06e-14">
 
-    // Retrieve input values
-    const dealPrice = parseFloat(document.getElementById('dealPrice').value);
-    const filPrice = parseFloat(document.getElementById('filPrice').value);
-    const rewardUsd = parseFloat(document.getElementById('rewardUsd').value);
-    const rewardFil = parseFloat(document.getElementById('rewardFil').value);
-    const numRoots = parseInt(document.getElementById('numRoots').value);
+    <label>Reward per 24h per byte (FIL):</label>
+    <input type="number" id="rewardFil" value="2.02e-14">
 
-    // Define proofset sizes in bytes
-    const proofsetSizes = [1000, 10000, 34359738368, 53687091200, 107374182400, 1099511627776, 2684354560000];
-    const resultsTableBody = document.getElementById('results-table').getElementsByTagName('tbody')[0];
-    resultsTableBody.innerHTML = ''; // Clear previous results
+    <label>Number of roots:</label>
+    <input type="number" id="numRoots" value="100">
 
-    // Calculate and display results
-    proofsetSizes.forEach(size => {
-      const gasCost = calculateGasCost(size, numRoots); // Implement this function based on your sheet's logic
-      const gasCostUsd = gasCost * filPrice;
-      const totalReward = rewardUsd * size * numRoots;
+    <div class="center">
+      <button onclick="calculate()">Calculate</button>
+    </div>
 
-      const row = resultsTableBody.insertRow();
-      row.insertCell(0).textContent = size.toLocaleString();
-      row.insertCell(1).textContent = gasCost.toFixed(6);
-      row.insertCell(2).textContent = gasCostUsd.toFixed(2);
-      row.insertCell(3).textContent = totalReward.toFixed(2);
-    });
-  });
+    <table id="resultsTable">
+      <thead>
+        <tr>
+          <th>Proofset Size (Bytes)</th>
+          <th>Gas Cost (FIL)</th>
+          <th>Gas Cost (USD)</th>
+          <th>Total Reward (USD)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Populated dynamically -->
+      </tbody>
+    </table>
+  </div>
 
-  // Example function to calculate gas cost based on size and number of roots
-  function calculateGasCost(size, roots) {
-    // Replace with your actual calculation logic
-    return (size / 1000) * roots * 0.0001;
-  }
-</script>
+  <script>
+    function calculate() {
+      const dealPrice = parseFloat(document.getElementById("dealPrice").value);
+      const filPrice = parseFloat(document.getElementById("filPrice").value);
+      const rewardUsd = parseFloat(document.getElementById("rewardUsd").value);
+      const rewardFil = parseFloat(document.getElementById("rewardFil").value);
+      const numRoots = parseInt(document.getElementById("numRoots").value);
+
+      const proofsetSizes = [
+        1_000,
+        10_000,
+        34_359_738_368,    // 32 GiB
+        53_687_091_200,    // 50 GiB
+        107_374_182_400,   // 100 GiB
+        1_099_511_627_776, // 1 TiB
+        2_684_354_560_000  // 2.44 TiB
+      ];
+
+      const baseFee = 1e-10; // High base fee in FIL
+      const gasUnitsPerProof = 140_000_000; // Gas units for 100 roots
+
+      const tbody = document.querySelector("#resultsTable tbody");
+      tbody.innerHTML = "";
+
+      proofsetSizes.forEach(size => {
+        const gasCostFil = gasUnitsPerProof * baseFee;
+        const gasCostUsd = gasCostFil * filPrice;
+        const totalRewardUsd = rewardUsd * size * numRoots;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${size.toLocaleString()}</td>
+          <td>${gasCostFil.toFixed(6)}</td>
+          <td>${gasCostUsd.toFixed(2)}</td>
+          <td>${totalRewardUsd.toFixed(2)}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+  </script>
 
 </body>
 </html>
-
 
