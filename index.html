@@ -15,8 +15,13 @@
       margin-top: 10px;
     }
     input {
-      padding: 5px;
-      width: 200px;
+      padding: 6px;
+      width: 300px;
+      margin-top: 4px;
+    }
+    input[readonly] {
+      background-color: #e0e0e0;
+      border: 1px solid #ccc;
     }
     table {
       width: 100%;
@@ -32,31 +37,38 @@
     th {
       background: #eee;
     }
-    .highlight {
-      background-color: #f0f8ff;
-    }
-    .readonly {
-      background-color: #eee;
-      border: none;
-    }
   </style>
 </head>
 <body>
 
 <h1>PDP Gas Cost & Reward Calculator</h1>
 
-<label>Deal price per TiB/month (USD): <input type="number" id="dealPrice" value="2" /></label>
-<label>FIL price (USD): <input type="number" id="filPrice" value="3" oninput="updateRewardUSD()" /></label>
-<label>Reward per 24h per byte (FIL): <input type="number" id="rewardFIL" value="2.02e-14" oninput="updateRewardUSD()" /></label>
-<label>Reward per 24h per byte (USD): 
-  <input type="text" id="rewardUSD" class="readonly" readonly />
+<label>Deal price per TiB/month (USD):
+  <input type="number" id="dealPrice" value="2" />
 </label>
-<label>Number of Roots: <input type="number" id="roots" value="100" /></label>
-<label>Storage Duration (months): <input type="number" id="months" value="1" /></label>
+
+<label>FIL price (USD):
+  <input type="number" id="filPrice" value="3" oninput="updateRewardFIL()" />
+</label>
+
+<label>Reward per 24h per byte (USD):
+  <input type="number" id="rewardUSD" value="6.06e-14" oninput="updateRewardFIL()" />
+</label>
+
+<label>Reward per 24h per byte (FIL):
+  <input type="text" id="rewardFIL" readonly />
+</label>
+
+<label>Number of Roots:
+  <input type="number" id="roots" value="100" />
+</label>
+
+<label>Storage Duration (months):
+  <input type="number" id="months" value="1" />
+</label>
 
 <button onclick="calculate()">Calculate</button>
 
-<h2>Results</h2>
 <table id="result">
   <thead>
     <tr>
@@ -91,20 +103,22 @@
     { label: "2500 GiB", bytes: 2684354560000 }
   ];
 
-  function updateRewardUSD() {
+  function updateRewardFIL() {
     const filPrice = parseFloat(document.getElementById("filPrice").value);
-    const rewardFIL = parseFloat(document.getElementById("rewardFIL").value);
-    const rewardUSD = rewardFIL * filPrice;
-    document.getElementById("rewardUSD").value = rewardUSD.toExponential(2);
+    const rewardUSD = parseFloat(document.getElementById("rewardUSD").value);
+
+    if (!isNaN(filPrice) && filPrice !== 0 && !isNaN(rewardUSD)) {
+      const rewardFIL = rewardUSD / filPrice;
+      document.getElementById("rewardFIL").value = rewardFIL.toExponential(4);
+    } else {
+      document.getElementById("rewardFIL").value = "";
+    }
   }
 
   function calculate() {
-    updateRewardUSD();
-
     const dealPrice = parseFloat(document.getElementById("dealPrice").value);
     const filPrice = parseFloat(document.getElementById("filPrice").value);
-    const rewardFIL = parseFloat(document.getElementById("rewardFIL").value);
-    const rewardUSD = rewardFIL * filPrice;
+    const rewardUSD = parseFloat(document.getElementById("rewardUSD").value);
     const roots = parseFloat(document.getElementById("roots").value);
     const months = parseFloat(document.getElementById("months").value);
 
@@ -114,7 +128,8 @@
       avg: 5.56e-12
     };
 
-    const gasPerRoot = 140000000 / 100;
+    const gasPer100Roots = 140000000;
+    const gasPerRoot = gasPer100Roots / 100;
     const gasUsed = roots * gasPerRoot;
 
     const tbody = document.querySelector("#result tbody");
@@ -168,13 +183,12 @@
           <td>${profits.low.toExponential(2)}</td>
           <td>${profits.avg.toExponential(2)}</td>
         </tr>`;
-        
       tbody.insertAdjacentHTML("beforeend", row);
     });
   }
 
-  // Initial setup
-  updateRewardUSD();
+  // initialize rewardFIL on load
+  window.onload = updateRewardFIL;
 </script>
 
 </body>
