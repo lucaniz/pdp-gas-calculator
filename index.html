@@ -230,4 +230,104 @@
             <td>1%</td>
             <td>${fees.one.toExponential(2)}</td>
             <td>${(dealIncome - fees.one).toExponential(2)}</td>
-          </tr>
+          </tr>`;
+
+        tbody2.insertAdjacentHTML("beforeend", discountRow1);
+        tbody2.insertAdjacentHTML("beforeend", discountRow2);
+        tbody2.insertAdjacentHTML("beforeend", discountRow3);
+
+        // Prepare data for the charts
+        gasCostsHigh.push(gasCosts.high);
+        gasCostsLow.push(gasCosts.low);
+        gasCostsAvg.push(gasCosts.avg);
+
+        profitsHigh.push(profits.high);
+        profitsLow.push(profits.low);
+        profitsAvg.push(profits.avg);
+      });
+
+      // Create Gas Costs Chart
+      const gasCostsChart = new Chart(document.getElementById('gasCostsChart'), {
+        type: 'line',
+        data: {
+          labels: sizes.map(size => size.label),
+          datasets: [{
+            label: 'Gas Cost (High)',
+            data: gasCostsHigh,
+            borderColor: 'rgba(255, 99, 132, 1)',
+            fill: false
+          }, {
+            label: 'Gas Cost (Low)',
+            data: gasCostsLow,
+            borderColor: 'rgba(54, 162, 235, 1)',
+            fill: false
+         }, {
+            label: 'Gas Cost (Avg)',
+            data: gasCostsAvg,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Storage Size'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Cost (USD)'
+              }
+            }
+          }
+        }
+      });
+
+      // Create Profits Chart
+      const profitsChart = new Chart(document.getElementById('profitsChart'), {
+        type: 'line',
+        data: {
+          labels: sizes.map(size => size.label),
+          datasets: [{
+            label: 'Profit (High)',
+            data: profitsHigh,
+            borderColor: 'rgba(153, 102, 255, 1)',
+            fill: false
+          }, {
+            label: 'Profit (Low)',
+            data: profitsLow,
+            borderColor: 'rgba(255, 159, 64, 1)',
+            fill: false
+          }, {
+            label: 'Profit (Avg)',
+            data: profitsAvg,
+            borderColor: 'rgba(255, 206, 86, 1)',
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Storage Size'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Profit (USD)'
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
