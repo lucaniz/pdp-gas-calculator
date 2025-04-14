@@ -46,7 +46,14 @@
       background: #e0e0e0;
       padding: 10px;
     }
+    .chart-container {
+      width: 100%;
+      height: 400px;
+      margin-top: 20px;
+    }
   </style>
+  <!-- Include Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <h1>PDP Gas Cost & Reward Calculator</h1>
@@ -60,6 +67,7 @@
 
   <button onclick="calculate()">Calculate</button>
 
+  <!-- Section 1: Calculation Overview -->
   <div class="section-title">Table 1: Calculation Overview</div>
   <table id="result1">
     <thead>
@@ -84,17 +92,27 @@
     <tbody></tbody>
   </table>
 
-  <div class="section-title">Table 2: Additional Discount Information</div>
+  <!-- Section 2: Discounts and Final Calculations -->
+  <div class="section-title">Table 2: Summary of Discounts and Final Calculations</div>
   <table id="result2">
     <thead>
       <tr>
         <th>Discount</th>
+        <th>Fee Percentage</th>
         <th>Discount Amount</th>
         <th>Net Deal Income</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
+
+  <!-- Section 3: Graphs -->
+  <div class="chart-container">
+    <canvas id="gasCostsChart"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="profitsChart"></canvas>
+  </div>
 
   <script>
     const sizes = [
@@ -106,6 +124,13 @@
       { label: "1 TiB", bytes: 1099511627776 },
       { label: "2500 GiB", bytes: 2684354560000 }
     ];
+
+    let gasCostsHigh = [];
+    let gasCostsLow = [];
+    let gasCostsAvg = [];
+    let profitsHigh = [];
+    let profitsLow = [];
+    let profitsAvg = [];
 
     function calculate() {
       const dealPrice = parseFloat(document.getElementById("dealPrice").value);
@@ -182,17 +207,27 @@
 
         tbody1.insertAdjacentHTML("beforeend", row1);
 
-        // Table 2 - Additional Discounts
-        const discountRow = `
+        // Table 2 - Discounts and Final Calculations
+        const discountRow1 = `
           <tr>
-            <td>5% Discount</td>
+            <td>5% Fee Discount</td>
+            <td>5%</td>
             <td>${fees.five.toExponential(2)}</td>
             <td>${(dealIncome - fees.five).toExponential(2)}</td>
           </tr>`;
-        tbody2.insertAdjacentHTML("beforeend", discountRow);
-      });
-    }
-  </script>
-</body>
-</html>
 
+        const discountRow2 = `
+          <tr>
+            <td>4% Fee Discount</td>
+            <td>4%</td>
+            <td>${fees.four.toExponential(2)}</td>
+            <td>${(dealIncome - fees.four).toExponential(2)}</td>
+          </tr>`;
+
+        const discountRow3 = `
+          <tr>
+            <td>1% Fee Discount</td>
+            <td>1%</td>
+            <td>${fees.one.toExponential(2)}</td>
+            <td>${(dealIncome - fees.one).toExponential(2)}</td>
+          </tr>
