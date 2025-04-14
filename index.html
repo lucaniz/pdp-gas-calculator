@@ -2,87 +2,116 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Filecoin Gas Cost Calculator</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    label { display: block; margin-top: 10px; }
-    input { width: 200px; padding: 5px; }
-    button { margin-top: 20px; padding: 10px 20px; }
-    .result { margin-top: 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      padding: 8px;
+      text-align: right;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
+<div class="container">
   <h1>Filecoin Gas Cost Calculator</h1>
+  <form id="calculator-form">
+    <label for="dealPrice">Deal Price per TiB per Month (USD):</label>
+    <input type="number" id="dealPrice" required>
+    <label for="filPrice">FIL Price (USD):</label>
+    <input type="number" id="filPrice" required>
+    <label for="rewardUsd">Reward per 24h per Byte (USD):</label>
+    <input type="number" id="rewardUsd" required>
+    <label for="rewardFil">Reward per 24h per Byte (FIL):</label>
+    <input type="number" id="rewardFil" required>
+    <label for="numRoots">Number of Roots:</label>
+    <input type="number" id="numRoots" value="100" required>
+    <button type="submit">Calculate</button>
+  </form>
 
-  <label>
-    Deal price per TiB/month (USD):
-    <input type="number" id="dealPrice" value="2" step="0.01">
-  </label>
+  <table id="results-table">
+    <thead>
+      <tr>
+        <th>Proofset Size (Bytes)</th>
+        <th>Gas Cost (FIL)</th>
+        <th>Gas Cost (USD)</th>
+        <th>Total Reward (USD)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Results will be populated here -->
+    </tbody>
+  </table>
+</div>
 
-  <label>
-    FIL price (USD):
-    <input type="number" id="filPrice" value="3" step="0.01">
-  </label>
+<script>
+  document.getElementById('calculator-form').addEventListener('submit', function(event) {
+    event.preventDefault();
 
-  <label>
-    Reward per 24h per byte (USD):
-    <input type="number" id="rewardUSD" value="6.06e-14" step="1e-15">
-  </label>
+    // Retrieve input values
+    const dealPrice = parseFloat(document.getElementById('dealPrice').value);
+    const filPrice = parseFloat(document.getElementById('filPrice').value);
+    const rewardUsd = parseFloat(document.getElementById('rewardUsd').value);
+    const rewardFil = parseFloat(document.getElementById('rewardFil').value);
+    const numRoots = parseInt(document.getElementById('numRoots').value);
 
-  <label>
-    Reward per 24h per byte (FIL):
-    <input type="number" id="rewardFIL" value="2.02e-14" step="1e-15">
-  </label>
+    // Define proofset sizes in bytes
+    const proofsetSizes = [1000, 10000, 34359738368, 53687091200, 107374182400, 1099511627776, 2684354560000];
+    const resultsTableBody = document.getElementById('results-table').getElementsByTagName('tbody')[0];
+    resultsTableBody.innerHTML = ''; // Clear previous results
 
-  <label>
-    Number of roots:
-    <input type="number" id="numRoots" value="100" min="100">
-  </label>
+    // Calculate and display results
+    proofsetSizes.forEach(size => {
+      const gasCost = calculateGasCost(size, numRoots); // Implement this function based on your sheet's logic
+      const gasCostUsd = gasCost * filPrice;
+      const totalReward = rewardUsd * size * numRoots;
 
-  <button onclick="calculate()">Calculate</button>
+      const row = resultsTableBody.insertRow();
+      row.insertCell(0).textContent = size.toLocaleString();
+      row.insertCell(1).textContent = gasCost.toFixed(6);
+      row.insertCell(2).textContent = gasCostUsd.toFixed(2);
+      row.insertCell(3).textContent = totalReward.toFixed(2);
+    });
+  });
 
-  <div class="result" id="result"></div>
-
-  <script>
-    function calculate() {
-      const dealPrice = parseFloat(document.getElementById('dealPrice').value);
-      const filPrice = parseFloat(document.getElementById('filPrice').value);
-      const rewardUSD = parseFloat(document.getElementById('rewardUSD').value);
-      const rewardFIL = parseFloat(document.getElementById('rewardFIL').value);
-      const numRoots = parseInt(document.getElementById('numRoots').value);
-
-      // Constants based on empirical data
-      const baseGas = 140000000; // Gas units for 100 roots
-      const gasPerRoot = 100000; // Additional gas per root beyond 100
-      const baseFeeNanoFIL = 0.1; // Example base fee in nanoFIL
-      const baseFeeFIL = baseFeeNanoFIL * 1e-9; // Convert to FIL
-
-      // Calculate total gas used
-      const extraRoots = Math.max(numRoots - 100, 0);
-      const totalGas = baseGas + (extraRoots * gasPerRoot);
-
-      // Calculate gas cost in FIL and USD
-      const gasCostFIL = totalGas * baseFeeFIL;
-      const gasCostUSD = gasCostFIL * filPrice;
-
-      // Calculate reward per byte per day in USD
-      const rewardPerBytePerDayUSD = rewardUSD;
-
-      // Calculate total reward per day for a given data size (example: 1 TiB)
-      const dataSizeBytes = 1 * 1024 ** 4; // 1 TiB in bytes
-      const totalRewardUSD = rewardPerBytePerDayUSD * dataSizeBytes;
-
-      // Display results
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = `
-        <p><strong>Total Gas Used:</strong> ${totalGas.toLocaleString()} units</p>
-        <p><strong>Gas Cost:</strong> ${gasCostFIL.toFixed(6)} FIL (~$${gasCostUSD.toFixed(2)})</p>
-        <p><strong>Total Reward for 1 TiB/day:</strong> ~$${totalRewardUSD.toFixed(2)}</p>
-      `;
-    }
-  </script>
+  // Example function to calculate gas cost based on size and number of roots
+  function calculateGasCost(size, roots) {
+    // Replace with your actual calculation logic
+    return (size / 1000) * roots * 0.0001;
+  }
+</script>
 
 </body>
 </html>
+
 
