@@ -43,20 +43,24 @@
 
 <h1>PDP Gas Cost & Reward Calculator</h1>
 
-<label>Deal price per TiB/month (USD): 
-  <input type="number" id="dealPrice" value="2" />
+<label>Total reward in USD (B21): 
+  <input type="number" id="totalRewardUSD" value="500" oninput="updateRewards()" />
 </label>
 
-<label>FIL price in USD: 
+<label>FIL price in USD (B22): 
   <input type="number" id="filPrice" value="3" oninput="updateRewards()" />
 </label>
 
-<label>Reward per 24h per byte (FIL): 
-  <input type="number" id="rewardFIL" value="2.02e-14" step="any" oninput="updateRewards()" />
+<label>Reward per 24h per byte (USD) [=B21 / (30 × 2^40)]: 
+  <input type="text" id="rewardUSD" readonly />
 </label>
 
-<label>Reward per 24h per byte (USD): 
-  <input type="text" id="rewardUSD" readonly />
+<label>Reward per 24h per byte (FIL) [=USD ÷ FIL price]: 
+  <input type="text" id="rewardFIL" readonly />
+</label>
+
+<label>Deal price per TiB/month (USD): 
+  <input type="number" id="dealPrice" value="2" />
 </label>
 
 <label>Number of Roots: 
@@ -94,10 +98,13 @@
 
 <script>
   function updateRewards() {
+    const totalUSD = parseFloat(document.getElementById("totalRewardUSD").value);
     const filPrice = parseFloat(document.getElementById("filPrice").value);
-    const rewardFIL = parseFloat(document.getElementById("rewardFIL").value);
-    const rewardUSD = filPrice * rewardFIL;
-    document.getElementById("rewardUSD").value = isFinite(rewardUSD) ? rewardUSD.toExponential(4) : '';
+    const rewardUSD = totalUSD / (30 * Math.pow(2, 40));
+    const rewardFIL = rewardUSD / filPrice;
+
+    document.getElementById("rewardUSD").value = isFinite(rewardUSD) ? rewardUSD.toExponential(6) : '';
+    document.getElementById("rewardFIL").value = isFinite(rewardFIL) ? rewardFIL.toExponential(6) : '';
   }
 
   const sizes = [
@@ -114,7 +121,6 @@
     const dealPrice = parseFloat(document.getElementById("dealPrice").value);
     const filPrice = parseFloat(document.getElementById("filPrice").value);
     const rewardUSD = parseFloat(document.getElementById("rewardUSD").value);
-    const rewardFIL = parseFloat(document.getElementById("rewardFIL").value);
     const roots = parseFloat(document.getElementById("roots").value);
     const months = parseFloat(document.getElementById("months").value);
 
@@ -183,10 +189,9 @@
     });
   }
 
-  // Initialize calculated rewards on page load
+  // Initialize on page load
   updateRewards();
 </script>
 
 </body>
 </html>
-
