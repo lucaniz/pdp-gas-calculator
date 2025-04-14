@@ -1,17 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDP Gas Calculator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDP Gas Cost & Reward Calculator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
       background: #f9f9f9;
-    }
-    h1 {
-      text-align: center;
     }
     label {
       display: block;
@@ -33,29 +30,21 @@
       text-align: right;
     }
     th {
-      background: #f2f2f2;
+      background: #eee;
     }
-    tr:nth-child(even) {
-      background: #f9f9f9;
+    h1, h2 {
+      color: #333;
     }
-    tr:nth-child(odd) {
-      background: #fff;
+    .discount-table th, .discount-table td {
+      text-align: left;
     }
-    .section-title {
-      font-weight: bold;
-      background: #e0e0e0;
-      padding: 10px;
-    }
-    .chart-container {
-      width: 100%;
-      height: 400px;
-      margin-top: 20px;
+    .highlight {
+      background-color: #f0f8ff;
     }
   </style>
-  <!-- Include Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+
   <h1>PDP Gas Cost & Reward Calculator</h1>
 
   <label>Deal price per TiB/month (USD): <input type="number" id="dealPrice" value="2"></label>
@@ -67,9 +56,8 @@
 
   <button onclick="calculate()">Calculate</button>
 
-  <!-- Section 1: Calculation Overview -->
-  <div class="section-title">Table 1: Calculation Overview</div>
-  <table id="result1">
+  <h2>Results</h2>
+  <table id="result">
     <thead>
       <tr>
         <th>Size</th>
@@ -92,27 +80,23 @@
     <tbody></tbody>
   </table>
 
-  <!-- Section 2: Discounts and Final Calculations -->
-  <div class="section-title">Table 2: Summary of Discounts and Final Calculations</div>
-  <table id="result2">
+  <h2>Discount Table (PDP Fee)</h2>
+  <p>This table shows the PDP Fee and its discounted versions based on different discount rates. The discount is applied to the 5% PDP Fee, and the final discounted cost is displayed for each storage size.</p>
+  <table class="discount-table">
     <thead>
       <tr>
-        <th>Discount</th>
-        <th>Fee Percentage</th>
-        <th>Discount Amount</th>
-        <th>Net Deal Income</th>
+        <th>Storage Size</th>
+        <th>PDP Fee (5%)</th>
+        <th>PDP Fee (5%) with Discount (5%)</th>
+        <th>PDP Fee (5%) with Discount (10%)</th>
+        <th>PDP Fee (5%) with Discount (15%)</th>
+        <th>Final Discounted Cost (After 5% PDP Fee Discount)</th>
       </tr>
     </thead>
-    <tbody></tbody>
+    <tbody>
+      <!-- The rows will be populated by the script -->
+    </tbody>
   </table>
-
-  <!-- Section 3: Graphs -->
-  <div class="chart-container">
-    <canvas id="gasCostsChart"></canvas>
-  </div>
-  <div class="chart-container">
-    <canvas id="profitsChart"></canvas>
-  </div>
 
   <script>
     const sizes = [
@@ -124,13 +108,6 @@
       { label: "1 TiB", bytes: 1099511627776 },
       { label: "2500 GiB", bytes: 2684354560000 }
     ];
-
-    let gasCostsHigh = [];
-    let gasCostsLow = [];
-    let gasCostsAvg = [];
-    let profitsHigh = [];
-    let profitsLow = [];
-    let profitsAvg = [];
 
     function calculate() {
       const dealPrice = parseFloat(document.getElementById("dealPrice").value);
@@ -149,11 +126,8 @@
       const gasPerRoot = gasPer100Roots / 100;
       const gasUsed = roots * gasPerRoot;
 
-      const tbody1 = document.querySelector("#result1 tbody");
-      tbody1.innerHTML = "";
-
-      const tbody2 = document.querySelector("#result2 tbody");
-      tbody2.innerHTML = "";
+      const tbody = document.querySelector("#result tbody");
+      tbody.innerHTML = "";
 
       sizes.forEach(({ label, bytes }) => {
         const reward = rewardUSD * bytes * roots;
@@ -185,8 +159,7 @@
           avg: reward - fees.five - gasCosts.avg
         };
 
-        // Table 1 - Overview
-        const row1 = `
+        const row = `
           <tr>
             <td>${label}</td>
             <td>${bytes.toExponential(2)}</td>
@@ -205,129 +178,42 @@
             <td>${profits.avg.toExponential(2)}</td>
           </tr>`;
 
-        tbody1.insertAdjacentHTML("beforeend", row1);
-
-        // Table 2 - Discounts and Final Calculations
-        const discountRow1 = `
-          <tr>
-            <td>5% Fee Discount</td>
-            <td>5%</td>
-            <td>${fees.five.toExponential(2)}</td>
-            <td>${(dealIncome - fees.five).toExponential(2)}</td>
-          </tr>`;
-
-        const discountRow2 = `
-          <tr>
-            <td>4% Fee Discount</td>
-            <td>4%</td>
-            <td>${fees.four.toExponential(2)}</td>
-            <td>${(dealIncome - fees.four).toExponential(2)}</td>
-          </tr>`;
-
-        const discountRow3 = `
-          <tr>
-            <td>1% Fee Discount</td>
-            <td>1%</td>
-            <td>${fees.one.toExponential(2)}</td>
-            <td>${(dealIncome - fees.one).toExponential(2)}</td>
-          </tr>`;
-
-        tbody2.insertAdjacentHTML("beforeend", discountRow1);
-        tbody2.insertAdjacentHTML("beforeend", discountRow2);
-        tbody2.insertAdjacentHTML("beforeend", discountRow3);
-
-        // Prepare data for the charts
-        gasCostsHigh.push(gasCosts.high);
-        gasCostsLow.push(gasCosts.low);
-        gasCostsAvg.push(gasCosts.avg);
-
-        profitsHigh.push(profits.high);
-        profitsLow.push(profits.low);
-        profitsAvg.push(profits.avg);
-      });
-
-      // Create Gas Costs Chart
-      const gasCostsChart = new Chart(document.getElementById('gasCostsChart'), {
-        type: 'line',
-        data: {
-          labels: sizes.map(size => size.label),
-          datasets: [{
-            label: 'Gas Cost (High)',
-            data: gasCostsHigh,
-            borderColor: 'rgba(255, 99, 132, 1)',
-            fill: false
-          }, {
-            label: 'Gas Cost (Low)',
-            data: gasCostsLow,
-            borderColor: 'rgba(54, 162, 235, 1)',
-            fill: false
-         }, {
-            label: 'Gas Cost (Avg)',
-            data: gasCostsAvg,
-            borderColor: 'rgba(75, 192, 192, 1)',
-            fill: false
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: 'Storage Size'
-              }
-            },
-            y: {
-              title: {
-                display: true,
-                text: 'Cost (USD)'
-              }
-            }
-          }
-        }
-      });
-
-      // Create Profits Chart
-      const profitsChart = new Chart(document.getElementById('profitsChart'), {
-        type: 'line',
-        data: {
-          labels: sizes.map(size => size.label),
-          datasets: [{
-            label: 'Profit (High)',
-            data: profitsHigh,
-            borderColor: 'rgba(153, 102, 255, 1)',
-            fill: false
-          }, {
-            label: 'Profit (Low)',
-            data: profitsLow,
-            borderColor: 'rgba(255, 159, 64, 1)',
-            fill: false
-          }, {
-            label: 'Profit (Avg)',
-            data: profitsAvg,
-            borderColor: 'rgba(255, 206, 86, 1)',
-            fill: false
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: 'Storage Size'
-              }
-            },
-            y: {
-              title: {
-                display: true,
-                text: 'Profit (USD)'
-              }
-            }
-          }
-        }
+        tbody.insertAdjacentHTML("beforeend", row);
       });
     }
+
+    // Function for calculating discounts
+    function calculateDiscounts(fee, discountRate) {
+      return fee - (fee * (discountRate / 100));
+    }
+
+    // Function for displaying discount table
+    function displayDiscounts() {
+      const discountRates = [5, 10, 15]; // 5%, 10%, 15% discounts
+
+      const discountTableBody = document.querySelector(".discount-table tbody");
+      discountTableBody.innerHTML = "";
+
+      sizes.forEach(({ label, bytes }) => {
+        const fee = rewardUSD * bytes * roots * 0.05;
+        const row = `
+          <tr>
+            <td>${label}</td>
+            <td>${fee.toFixed(2)} USD</td>
+            ${discountRates.map(rate => {
+              const discountedFee = calculateDiscounts(fee, rate);
+              return `<td>${discountedFee.toFixed(2)} USD</td>`;
+            }).join('')}
+            <td>${(fee - (fee * 0.05)).toFixed(2)} USD</td>
+          </tr>`;
+
+        discountTableBody.insertAdjacentHTML("beforeend", row);
+      });
+    }
+
+    // Initialize on page load
+    displayDiscounts();
   </script>
+
 </body>
 </html>
