@@ -22,10 +22,11 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
+      font-size: 12px;
     }
     th, td {
       border: 1px solid #ccc;
-      padding: 8px;
+      padding: 6px;
       text-align: right;
     }
     th {
@@ -41,6 +42,7 @@
   <label>Reward per 24h per byte (USD): <input type="number" id="rewardUSD" value="6.06e-14"></label>
   <label>Reward per 24h per byte (FIL): <input type="number" id="rewardFIL" value="2.02e-14"></label>
   <label>Number of Roots: <input type="number" id="roots" value="100"></label>
+  <label>Storage Duration (months): <input type="number" id="months" value="1"></label>
 
   <button onclick="calculate()">Calculate</button>
 
@@ -56,6 +58,9 @@
         <th>Gas Cost (Low)</th>
         <th>Gas Cost (Avg)</th>
         <th>Reward (USD)</th>
+        <th>Deal Income</th>
+        <th>% Gas / Reward</th>
+        <th>% PDP / Reward</th>
         <th>Profit (High)</th>
         <th>Profit (Low)</th>
         <th>Profit (Avg)</th>
@@ -80,6 +85,7 @@
       const filPrice = parseFloat(document.getElementById("filPrice").value);
       const rewardUSD = parseFloat(document.getElementById("rewardUSD").value);
       const roots = parseFloat(document.getElementById("roots").value);
+      const months = parseFloat(document.getElementById("months").value);
 
       const baseFees = {
         high: 1e-10,
@@ -108,6 +114,16 @@
           avg: gasUsed * baseFees.avg * filPrice
         };
 
+        const dealIncome = (bytes / 1099511627776) * dealPrice * months;
+
+        const percentGas = {
+          high: (gasCosts.high / reward) * 100,
+          low: (gasCosts.low / reward) * 100,
+          avg: (gasCosts.avg / reward) * 100
+        };
+
+        const percentPDP = (fees.five / reward) * 100;
+
         const profits = {
           high: reward - fees.five - gasCosts.high,
           low: reward - fees.five - gasCosts.low,
@@ -125,6 +141,9 @@
             <td>${gasCosts.low.toExponential(2)}</td>
             <td>${gasCosts.avg.toExponential(2)}</td>
             <td>${reward.toExponential(2)}</td>
+            <td>${dealIncome.toExponential(2)}</td>
+            <td>${percentGas.avg.toFixed(2)}%</td>
+            <td>${percentPDP.toFixed(2)}%</td>
             <td>${profits.high.toExponential(2)}</td>
             <td>${profits.low.toExponential(2)}</td>
             <td>${profits.avg.toExponential(2)}</td>
