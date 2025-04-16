@@ -92,16 +92,17 @@ function calculate() {
   for (const tier in baseFees) {
     const baseFee = baseFees[tier];
 
-    const gasFeeSingle = baseFee * gasUnits + 10000000 * Math.log10(gasUnits / roots);
+    
+    const gasFeeSingle = baseFee * gasUnits + Math.log10(gasUnits / roots);
     const gasFee = gasFeeSingle * proofsPerDay;
 
     let pdpFee = 0;
     if (gasFee > upperBound) {
       pdpFee = 0;
     } else if (gasFee > lowerBound) {
-      pdpFee = (upperBound - gasFee) * 1; // one proof per iteration
+      pdpFee = (upperBound - gasFee);
     } else {
-      pdpFee = onePercent * 1;
+      pdpFee = onePercent;
     }
 
     pdpFee *= proofsPerDay;
@@ -123,4 +124,5 @@ calculate();
 
 </body>
 </html>
+
 
