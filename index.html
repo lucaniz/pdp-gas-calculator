@@ -179,23 +179,23 @@
 
       // Calculate Reward per 24h per byte (USD)
       const rewardPerByteUSD = dealPriceValue / (30 * Math.pow(2, 40));
-      rewardUSD.textContent = rewardPerByteUSD.toFixed(10);
+      rewardUSD.textContent = rewardPerByteUSD.toExponential(10);
 
       // Calculate Reward per 24h per byte (FIL)
       const rewardPerByteFIL = rewardPerByteUSD / filPriceValue;
-      rewardFIL.textContent = rewardPerByteFIL.toFixed(10);
+      rewardFIL.textContent = rewardPerByteFIL.toExponential(10);
 
       // Calculate Upper Bound (5%), FIL
       const upperBoundValue = 0.05 * (proofSizeValue * Math.pow(1024, 3)) * rewardPerByteFIL;
-      upperBound.textContent = upperBoundValue.toFixed(10);
+      upperBound.textContent = upperBoundValue.toExponential(10);
 
       // Calculate Lower Bound (4%), FIL
       const lowerBoundValue = 0.04 * (proofSizeValue * Math.pow(1024, 3)) * rewardPerByteFIL;
-      lowerBound.textContent = lowerBoundValue.toFixed(10);
+      lowerBound.textContent = lowerBoundValue.toExponential(10);
 
       // Calculate 1% (FIL)
       const onePercentValue = 0.01 * (proofSizeValue * Math.pow(1024, 3)) * rewardPerByteFIL;
-      onePercent.textContent = onePercentValue.toFixed(10);
+      onePercent.textContent = onePercentValue.toExponential(10);
     }
 
     // Add event listeners for updates
