@@ -18,11 +18,20 @@
       margin-top: 40px;
       color: #333;
     }
-    p.description {
+    .description {
       background: #e0f7fa;
-      padding: 15px;
+      padding: 15px 20px;
       border-left: 5px solid #00acc1;
       margin-bottom: 30px;
+    }
+    .description ul {
+      margin: 10px 0 10px 20px;
+    }
+    .description code {
+      background-color: #f1f1f1;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-family: monospace;
     }
     table {
       width: 100%;
@@ -41,15 +50,6 @@
       color: #333;
       font-weight: bold;
     }
-    .subsection {
-      background-color: #d0ebff;
-      font-weight: bold;
-      text-align: center;
-    }
-    input, select {
-      padding: 5px;
-      width: 100px;
-    }
     .high { background-color: #ffe0e0; }
     .low { background-color: #e0ffe0; }
     .avg { background-color: #e0f0ff; }
@@ -59,12 +59,17 @@
       font-weight: bold;
       font-size: 16px;
     }
+    input, select {
+      padding: 5px;
+      width: 100px;
+    }
   </style>
 </head>
 <body>
 
-  <h1>PDP Gas & Costs Calculator</h1>
-  <div class="description">
+<h1>PDP Gas & Costs Calculator</h1>
+
+<div class="description">
   <p>
     This calculator helps provide insights into the gas costs, fees, and profitability of Filecoin PDP
     based on on-chain activity. You can input the expected deal price, FIL price, number of roots (within fixed ranges), 
@@ -79,7 +84,7 @@
     </ul>
   </p>
   <p>
-    <strong>Data references:</strong>
+    Data references:
     <ul>
       <li>
         PDP Verifier empirical gas data:
@@ -97,81 +102,90 @@
   </p>
 </div>
 
-  <h2>Parameters</h2>
+<h2>Parameters</h2>
+<table>
+  <tr><td colspan="2" class="section-title">Gas Units</td></tr>
+  <tr><th>Name</th><th>Value</th></tr>
+  <tr><td>100 roots</td><td>140,000,000</td></tr>
+  <tr><td>1000 roots</td><td>150,000,000</td></tr>
+  <tr><td>10000 roots</td><td>160,000,000</td></tr>
+  <tr><td>100000 roots</td><td>170,000,000</td></tr>
+</table>
 
-  <!-- Gas Units Section -->
-  <table>
-    <tr><td colspan="2" class="section-title">Gas Units</td></tr>
-    <tr><th>Name</th><th>Value</th></tr>
-    <tr><td>100 roots</td><td>140,000,000</td></tr>
-    <tr><td>1000 roots</td><td>150,000,000</td></tr>
-    <tr><td>10000 roots</td><td>160,000,000</td></tr>
-    <tr><td>100000 roots</td><td>170,000,000</td></tr>
-  </table>
+<table>
+  <tr><td colspan="2" class="section-title">Base Fee (FIL)</td></tr>
+  <tr><th>Name</th><th>Value</th></tr>
+  <tr><td>High base fee (0.1 nanoFIL)</td><td>1e-10</td></tr>
+  <tr><td>Low base fee (100 attoFIL)</td><td>1e-16</td></tr>
+  <tr><td>Last 30days average</td><td>5.56e-12</td></tr>
+</table>
 
-  <!-- Base Fee Section -->
-  <table>
-    <tr><td colspan="2" class="section-title">Base Fee (FIL)</td></tr>
-    <tr><th>Name</th><th>Value</th></tr>
-    <tr><td>High base fee (0.1 nanoFIL)</td><td>1e-10</td></tr>
-    <tr><td>Low base fee (100 attoFIL)</td><td>1e-16</td></tr>
-    <tr><td>Last 30days average</td><td>5.56e-12</td></tr>
-  </table>
+<h2>Inputs</h2>
+<table>
+  <tr><th>Name</th><th>Value</th></tr>
+  <tr><td>Deal price per TiB per month (USD)</td><td><input type="number" id="dealPrice" value="2" step="0.1" /></td></tr>
+  <tr><td>FIL price (USD)</td><td><input type="number" id="filPrice" value="3" step="0.1" /></td></tr>
+  <tr><td>Number of roots</td><td>
+    <select id="roots">
+      <option value="100" selected>100</option>
+      <option value="1000">1000</option>
+      <option value="10000">10000</option>
+      <option value="100000">100000</option>
+    </select>
+  </td></tr>
+  <tr><td>ProofSet size (GiB)</td><td><input type="number" id="proofSize" value="100" step="0.01" /></td></tr>
+  <tr><td>Number of proofs in a day</td><td><input type="number" id="proofsPerDay" value="1" /></td></tr>
+</table>
 
-  <h2>Inputs</h2>
-  <table>
-    <tr><th>Name</th><th>Value</th></tr>
-    <tr><td>Deal price per TiB per month (USD)</td><td><input type="number" id="dealPrice" value="2" step="0.1" /></td></tr>
-    <tr><td>FIL price (USD)</td><td><input type="number" id="filPrice" value="3" step="0.1" /></td></tr>
-    <tr><td>Number of roots</td><td>
-      <select id="roots">
-        <option value="100" selected>100</option>
-        <option value="1000">1000</option>
-        <option value="10000">10000</option>
-        <option value="100000">100000</option>
-      </select>
-    </td></tr>
-    <tr><td>ProofSet size (GiB)</td><td><input type="number" id="proofSize" value="100" step="0.01" /></td></tr>
-    <tr><td>Number of proofs in a day</td><td><input type="number" id="proofsPerDay" value="1" /></td></tr>
-  </table>
+<h2>Internal Math</h2>
+<table>
+  <tr><th>Name</th><th>Value</th></tr>
+  <tr><td>Reward per 24h per byte (USD)</td><td id="rewardUSD"></td></tr>
+  <tr><td>Reward per 24h per byte (FIL)</td><td id="rewardFIL"></td></tr>
+  <tr><td>Upper bound (5%), FIL</td><td id="upperBound"></td></tr>
+  <tr><td>Lower Bound (4%), FIL</td><td id="lowerBound"></td></tr>
+  <tr><td>1%, FIL</td><td id="onePercent"></td></tr>
+</table>
 
-  <h2>Internal Math</h2>
-  <table>
-    <tr><th>Name</th><th>Value</th></tr>
-    <tr><td>Reward per 24h per byte (USD)</td><td id="rewardUSD"></td></tr>
-    <tr><td>Reward per 24h per byte (FIL)</td><td id="rewardFIL"></td></tr>
-    <tr><td>Upper bound (5%), FIL</td><td id="upperBound"></td></tr>
-    <tr><td>Lower Bound (4%), FIL</td><td id="lowerBound"></td></tr>
-    <tr><td>1%, FIL</td><td id="onePercent"></td></tr>
-  </table>
-
-  <h2>Outputs</h2>
-  <table>
-    <tr>
-      <th></th>
-      <th class="high">High base fee</th>
-      <th class="low">Low base fee</th>
-      <th class="avg">30d avg base fee</th>
-    </tr>
-    <tr>
-      <td>Daily gas fee (FIL, all proofs)</td>
-      <td class="high" id="gasHigh"></td>
-      <td class="low" id="gasLow"></td>
-      <td class="avg" id="gasAvg"></td>
-    </tr>
-    <tr>
-      <td>Daily PDP proof fee (FIL, all proofs)</td>
-      <td class="high" id="pdpHigh"></td>
-      <td class="low" id="pdpLow"></td>
-      <td class="avg" id="pdpAvg"></td>
-    </tr>
-    <tr>
-      <td>Daily profit (FIL)</td>
-      <td class="high" id="profitHigh"></td>
-      <td class="low" id="profitLow"></td>
-      <td class="avg" id="profitAvg"></td>
-    </tr>
-  </table>
+<h2>Outputs</h2>
+<table>
+  <tr>
+    <th></th>
+    <th class="high">High base fee</th>
+    <th class="low">Low base fee</th>
+    <th class="avg">30d avg base fee</th>
+  </tr>
+  <tr>
+    <td>Daily gas fee (FIL, all proofs)</td>
+    <td class="high" id="gasHigh"></td>
+    <td class="low" id="gasLow"></td>
+    <td class="avg" id="gasAvg"></td>
+  </tr>
+  <tr>
+    <td>Daily PDP proof fee (FIL, all proofs)</td>
+    <td class="high" id="pdpHigh"></td>
+    <td class="low" id="pdpLow"></td>
+    <td class="avg" id="pdpAvg"></td>
+  </tr>
+  <tr>
+    <td>Daily profit (FIL)</td>
+    <td class="high" id="profitHigh"></td>
+    <td class="low" id="profitLow"></td>
+    <td class="avg" id="profitAvg"></td>
+  </tr>
+  <tr>
+    <td>Daily profit (USD)</td>
+    <td class="high" id="profitUSDHigh"></td>
+    <td class="low" id="profitUSDLow"></td>
+    <td class="avg" id="profitUSDAvg"></td>
+  </tr>
+  <tr>
+    <td>Monthly profit (USD)</td>
+    <td class="high" id="profitUSDMonthHigh"></td>
+    <td class="low" id="profitUSDMonthLow"></td>
+    <td class="avg" id="profitUSDMonthAvg"></td>
+  </tr>
+</table>
 
 <script>
 const gasUnitsMap = {
@@ -234,6 +248,12 @@ function calculate() {
     document.getElementById("gas" + tier).textContent = sci(gasFee);
     document.getElementById("pdp" + tier).textContent = sci(pdpFee);
     document.getElementById("profit" + tier).textContent = sci(profit);
+
+    const profitUSD = profit * filPrice;
+    const profitUSDMonth = profitUSD * 30;
+
+    document.getElementById("profitUSD" + tier).textContent = profitUSD.toFixed(4);
+    document.getElementById("profitUSDMonth" + tier).textContent = profitUSDMonth.toFixed(4);
   }
 }
 
@@ -246,4 +266,5 @@ calculate();
 
 </body>
 </html>
+
 
