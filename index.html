@@ -9,10 +9,32 @@
     table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: #fff; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; font-size: 14px; }
     th { background: #eee; }
+    .subsection { background-color: #dbeeff; font-weight: bold; text-align: center; }
     input, select { width: 120px; padding: 5px; }
   </style>
 </head>
 <body>
+
+<h2>Parameters</h2>
+
+<!-- Gas Units Section -->
+<table>
+  <tr><td colspan="2" class="subsection">Gas Units</td></tr>
+  <tr><th>Name</th><th>Value</th></tr>
+  <tr><td>100 roots</td><td>140,000,000</td></tr>
+  <tr><td>1000 roots</td><td>150,000,000</td></tr>
+  <tr><td>10000 roots</td><td>160,000,000</td></tr>
+  <tr><td>100000 roots</td><td>170,000,000</td></tr>
+</table>
+
+<!-- Base Fee Section -->
+<table>
+  <tr><td colspan="2" class="subsection">Base Fee</td></tr>
+  <tr><th>Name</th><th>Value</th></tr>
+  <tr><td>High base fee (0.1 nanoFIL)</td><td>0.0000000001</td></tr>
+  <tr><td>Low base fee (100 attoFIL)</td><td>1E-16</td></tr>
+  <tr><td>Last 30days average</td><td>5.56E-12</td></tr>
+</table>
 
 <h2>Inputs</h2>
 <table>
@@ -92,7 +114,6 @@ function calculate() {
   for (const tier in baseFees) {
     const baseFee = baseFees[tier];
 
-    
     const gasFeeSingle = baseFee * gasUnits + Math.log10(gasUnits / roots);
     const gasFee = gasFeeSingle * proofsPerDay;
 
@@ -124,5 +145,3 @@ calculate();
 
 </body>
 </html>
-
-
