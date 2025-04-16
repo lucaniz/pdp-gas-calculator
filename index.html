@@ -64,15 +64,38 @@
 <body>
 
   <h1>PDP Gas & Costs Calculator</h1>
-  <p class="description">
-    This calculator helps providing informations about the gas costs, fees, and profitability of Filecoin PDP 
-    based on on-chain activity. You can input expected deal price, FIL price, number of roots (within fixed ranges), and ProofSet size. 
-    The tool compares profitability across scenarios using High, Low, and Average (last 30 days) base fees values.
-    Gas consumption values are based on empirical measurements, which basically suggest that 
-    - `ProvePossession` for a proofset of 100 roots cost ~140M gas units
-    - ProofSet size does not affect the gas significantly, while the number of roots does (10x more roots costs ~10M more gas, and this is why we put the root number selection this way)
-    - reference for data: PDP Verifier Empirical gas and  https://filecoinproject.slack.com/archives/C0717TGU7V2/p1741801843702789
+  <div class="description">
+  <p>
+    This calculator helps provide insights into the gas costs, fees, and profitability of Filecoin PDP
+    based on on-chain activity. You can input the expected deal price, FIL price, number of roots (within fixed ranges), 
+    and ProofSet size. The tool compares profitability across scenarios using High, Low, and Average (last 30 days) base fee values.
   </p>
+  <p>
+    Gas consumption estimates are based on empirical measurements:
+    <ul>
+      <li><code>ProvePossession</code> for a proofset of 100 roots costs approximately <strong>140M gas units</strong>.</li>
+      <li><strong>ProofSet size</strong> does not significantly impact gas usage.</li>
+      <li>Increasing the number of roots increases cost by ~10M per 10x more roots.</li>
+    </ul>
+  </p>
+  <p>
+    <strong>Data references:</strong>
+    <ul>
+      <li>
+        PDP Verifier empirical gas data:
+        <a href="https://docs.google.com/spreadsheets/d/1zQ8jLi_JnQk0l89ql3qRpBZjHay8IwmVte3rQi2lvvc/edit?gid=0#gid=0" target="_blank">
+          Google Sheet
+        </a>
+      </li>
+      <li>
+        Filecoin Slack discussion:
+        <a href="https://filecoinproject.slack.com/archives/C0717TGU7V2/p1741801843702789" target="_blank">
+          Slack message
+        </a>
+      </li>
+    </ul>
+  </p>
+</div>
 
   <h2>Parameters</h2>
 
