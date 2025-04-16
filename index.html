@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PDP Gas Calculator – Params</title>
+  <title>PDP Gas Calculator – Parameters</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,51 +11,84 @@
       padding: 20px;
     }
     h2 {
-      margin-top: 30px;
-      margin-bottom: 10px;
+      margin-top: 40px;
+      color: #333;
     }
     table {
       border-collapse: collapse;
       width: 100%;
       margin-bottom: 30px;
-      background: white;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
     th, td {
       border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
+      padding: 10px;
       font-size: 14px;
+      text-align: left;
     }
     th {
       background-color: #eee;
+    }
+    .subsection {
+      background-color: #dbeeff;
+      font-weight: bold;
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
-  <h2>Params (Read-Only)</h2>
+  <h2>Parameters</h2>
 
+  <!-- Gas Units Section -->
   <table>
-    <thead>
-      <tr>
-        <th>Parameter</th>
-        <th>Value</th>
-        <th>Unit</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>Gas per 100 roots</td><td>140,000,000</td><td>Gas</td><td>Gas used per 100 PDP roots</td></tr>
-      <tr><td>High Base Fee</td><td>1e-10</td><td>FIL</td><td>Estimated high base fee</td></tr>
-      <tr><td>Low Base Fee</td><td>1e-16</td><td>FIL</td><td>Estimated low base fee</td></tr>
-      <tr><td>Avg Base Fee</td><td>5.56e-12</td><td>FIL</td><td>Estimated average base fee</td></tr>
-      <tr><td>Standard PDP Fee %</td><td>5%</td><td>%</td><td>Standard PDP fee (of total reward)</td></tr>
-      <tr><td>Deal size (TiB)</td><td>1</td><td>TiB</td><td>Default deal size</td></tr>
-      <tr><td>Sector Size (TiB)</td><td>32</td><td>TiB</td><td>Sector size used in calculations</td></tr>
-      <tr><td>Days per Month</td><td>30</td><td>Days</td><td>Used for monthly reward conversion</td></tr>
-      <tr><td>Reward per day per byte (FIL)</td><td>2.02e-14</td><td>FIL/byte</td><td>Daily reward rate per byte</td></tr>
-      <tr><td>FIL Price</td><td>3</td><td>USD</td><td>Current FIL price</td></tr>
-    </tbody>
+    <tr>
+      <td colspan="4" class="subsection">Gas Units</td>
+    </tr>
+    <tr>
+      <th>Parameter</th>
+      <th>Value</th>
+    </tr>
+    <tr>
+      <td>100 roots</td>
+      <td>140,000,000</td>
+    </tr>
+    <tr>
+      <td>1000 roots</td>
+      <td>150,000,000</td>
+    </tr>
+    <tr>
+      <td>10000 roots</td>
+      <td>160,000,000</td>
+    </tr>
+    <tr>
+      <td>100000 roots</td>
+      <td>170,000,000</td>
+    </tr>
+  </table>
+
+  <!-- Base Fee Section -->
+  <table>
+    <tr>
+      <td colspan="4" class="subsection">Base Fee</td>
+    </tr>
+    <tr>
+      <th>Parameter</th>
+      <th>Value</th>
+    </tr>
+    <tr>
+      <td>High base fee (0.1 nanoFIL)</td>
+      <td>0.0000000001</td>
+    </tr>
+    <tr>
+      <td>Low base fee (100 attoFIL)</td>
+      <td>1E-16</td>
+    </tr>
+    <tr>
+      <td>Last 30days average</td>
+      <td>5.56E-12</td>
+    </tr>
   </table>
 
 </body>
