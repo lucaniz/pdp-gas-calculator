@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PDP Gas Calculator</title>
+  <title>PDP Gas Calculator – Parameters</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -47,83 +47,149 @@
 
   <!-- Gas Units Section -->
   <table>
-    <tr><td colspan="4" class="subsection">Gas Units</td></tr>
-    <tr><th>Name</th><th>Value</th></tr>
-    <tr><td>100 roots</td><td>140000000</td></tr>
-    <tr><td>1000 roots</td><td>150000000</td></tr>
-    <tr><td>10000 roots</td><td>160000000</td></tr>
-    <tr><td>100000 roots</td><td>170000000</td></tr>
+    <tr>
+      <td colspan="4" class="subsection">Gas Units</td>
+    </tr>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+    </tr>
+    <tr>
+      <td>100 roots</td>
+      <td>140000000</td>
+    </tr>
+    <tr>
+      <td>1000 roots</td>
+      <td>150000000</td>
+    </tr>
+    <tr>
+      <td>10000 roots</td>
+      <td>160000000</td>
+    </tr>
+    <tr>
+      <td>100000 roots</td>
+      <td>170000000</td>
+    </tr>
   </table>
 
   <!-- Base Fee Section -->
   <table>
-    <tr><td colspan="4" class="subsection">Base Fee</td></tr>
-    <tr><th>Name</th><th>Value</th></tr>
-    <tr><td>High base fee (0.1 nanoFIL)</td><td>1.00E-10</td></tr>
-    <tr><td>Low base fee (100 attoFIL)</td><td>1.00E-16</td></tr>
-    <tr><td>Last 30days average</td><td>5.56E-12</td></tr>
+    <tr>
+      <td colspan="4" class="subsection">Base Fee</td>
+    </tr>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+    </tr>
+    <tr>
+      <td>High base fee (0.1 nanoFIL)</td>
+      <td>1.00E-10</td>
+    </tr>
+    <tr>
+      <td>Low base fee (100 attoFIL)</td>
+      <td>1.00E-16</td>
+    </tr>
+    <tr>
+      <td>Last 30days average</td>
+      <td>5.56E-12</td>
+    </tr>
   </table>
 
   <!-- Inputs Section -->
   <h2>Inputs</h2>
   <table>
-    <tr><th>Name</th><th>Value</th></tr>
-    <tr><td>Deal price per TiB per month (USD)</td><td><input type="number" id="dealPrice" value="2" step="0.1" /></td></tr>
-    <tr><td>FIL price (USD)</td><td><input type="number" id="filPrice" value="3" step="0.1" /></td></tr>
-    <tr><td>Number of roots</td>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+    </tr>
+    <tr>
+      <td>Deal price per TiB per month (USD)</td>
+      <td><input type="number" id="dealPrice" value="2" step="0.1" /></td>
+    </tr>
+    <tr>
+      <td>FIL price (USD)</td>
+      <td><input type="number" id="filPrice" value="3" step="0.1" /></td>
+    </tr>
+    <tr>
+      <td>Number of roots</td>
       <td>
         <select id="roots">
           <option value="100">100</option>
           <option value="1000">1000</option>
           <option value="10000">10000</option>
-          <option value="100000">100000</option>
+          <option value="100000" selected>100000</option>
         </select>
       </td>
     </tr>
-    <tr><td>ProofSet size (GiB)</td><td><input type="number" id="proofSize" value="100" min="0.01" step="0.01" /></td></tr>
-    <tr><td>Number of proofs in a day</td><td><input type="number" id="proofsPerDay" value="1" min="1" /></td></tr>
+    <tr>
+      <td>ProofSet size (GiB)</td>
+      <td><input type="number" id="proofSize" value="100" min="0.01" step="0.01" /></td>
+    </tr>
+    <tr>
+      <td>Number of proofs in a day</td>
+      <td><input type="number" id="proofsPerDay" value="1" min="1" /></td>
+    </tr>
   </table>
 
   <!-- Internal Math Section -->
   <h2>Internal Math</h2>
   <table>
-    <tr><th>Name</th><th>Value</th></tr>
-    <tr><td>Reward per 24h per byte (USD)</td><td>6.06E-14</td></tr>
-    <tr><td>Reward per 24h per byte (FIL)</td><td>2.02E-14</td></tr>
-    <tr><td>Upper bound (5%), FIL</td><td>1.09E+07</td></tr>
-    <tr><td>Lower Bound (4%), FIL</td><td>8.74E+06</td></tr>
-    <tr><td>1%, FIL</td><td>2.18E+06</td></tr>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+    </tr>
+    <tr>
+      <td>Reward per 24h per byte (USD)</td>
+      <td>6.06E-14</td>
+    </tr>
+    <tr>
+      <td>Reward per 24h per byte (FIL)</td>
+      <td>2.02E-14</td>
+    </tr>
+    <tr>
+      <td>Upper bound (5%), FIL</td>
+      <td>1.08E-04</td>
+    </tr>
+    <tr>
+      <td>Lower Bound (4%), FIL</td>
+      <td>8.66E-05</td>
+    </tr>
+    <tr>
+      <td>1%, FIL</td>
+      <td>2.17E-05</td>
+    </tr>
   </table>
 
   <!-- Outputs Section -->
   <h2>Outputs</h2>
   <table>
     <tr>
-      <th></th>
+      <th>Name</th>
       <th>High base fee (0.1 nanoFIL)</th>
       <th>Low base fee (100 attoFIL)</th>
       <th>Last 30days average</th>
     </tr>
     <tr>
       <td>Daily gas fee (FIL)</td>
-      <td>highFee × (gasUnits + 10⁷ × log₁₀(roots/gasUnits)) × proofsPerDay</td>
-      <td>lowFee × (gasUnits + 10⁷ × log₁₀(roots/gasUnits)) × proofsPerDay</td>
-      <td>avgFee × (gasUnits + 10⁷ × log₁₀(roots/gasUnits)) × proofsPerDay</td>
+      <td>7.85E-03</td>
+      <td>7.85E-09</td>
+      <td>4.37E-04</td>
     </tr>
     <tr>
-      <td>Daily PDP proof fee (FIL)</td>
-      <td>IF(gasFee > upper, 0, IF(gasFee > lower, upper - gasFee, onePercent)) × proofsPerDay</td>
-      <td>Same logic using low base fee</td>
-      <td>Same logic using avg base fee</td>
+      <td>Daily pdp proof fee (FIL)</td>
+      <td>0.00E+00</td>
+      <td>2.17E-05</td>
+      <td>0.00E+00</td>
     </tr>
     <tr>
       <td>Daily profit (per proofset, FIL)</td>
-      <td>reward × proofSize × 1024³ - (gasFee + pdpFee)</td>
-      <td>Same logic using low base fee</td>
-      <td>Same logic using avg base fee</td>
+      <td>-5.68E-03</td>
+      <td>2.15E-03</td>
+      <td>1.73E-03</td>
     </tr>
   </table>
 
 </body>
 </html>
+
 
