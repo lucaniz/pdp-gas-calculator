@@ -44,8 +44,8 @@
 <h2>Outputs</h2>
 <table>
   <tr><th></th><th>High base fee</th><th>Low base fee</th><th>30d avg base fee</th></tr>
-  <tr><td>Daily gas fee (FIL)</td><td id="gasHigh"></td><td id="gasLow"></td><td id="gasAvg"></td></tr>
-  <tr><td>Daily PDP proof fee (FIL)</td><td id="pdpHigh"></td><td id="pdpLow"></td><td id="pdpAvg"></td></tr>
+  <tr><td>Daily gas fee (FIL, all proofs)</td><td id="gasHigh"></td><td id="gasLow"></td><td id="gasAvg"></td></tr>
+  <tr><td>Daily PDP proof fee (FIL, all proofs)</td><td id="pdpHigh"></td><td id="pdpLow"></td><td id="pdpAvg"></td></tr>
   <tr><td>Daily profit (FIL)</td><td id="profitHigh"></td><td id="profitLow"></td><td id="profitAvg"></td></tr>
 </table>
 
@@ -92,24 +92,25 @@ function calculate() {
   for (const tier in baseFees) {
     const baseFee = baseFees[tier];
 
-    // ✅ CORRECT LOG FIX: gasUnits / roots
-    const logPart = 10000000 * Math.log10(gasUnits / roots);
-    const gasFee = (baseFee * gasUnits + logPart) * proofsPerDay;
+    const gasFeeSingle = baseFee * gasUnits + 10000000 * Math.log10(gasUnits / roots);
+    const gasFee = gasFeeSingle * proofsPerDay;
 
     let pdpFee = 0;
     if (gasFee > upperBound) {
       pdpFee = 0;
     } else if (gasFee > lowerBound) {
-      pdpFee = (upperBound - gasFee) * proofsPerDay;
+      pdpFee = (upperBound - gasFee) * 1; // one proof per iteration
     } else {
-      pdpFee = onePercent * proofsPerDay;
+      pdpFee = onePercent * 1;
     }
+
+    pdpFee *= proofsPerDay;
 
     const profit = rewardFIL * bytes - gasFee - pdpFee;
 
-    document.getElementById(`gas${tier}`).textContent = sci(gasFee);
-    document.getElementById(`pdp${tier}`).textContent = sci(pdpFee);
-    document.getElementById(`profit${tier}`).textContent = sci(profit);
+    document.getElementById("gas" + tier).textContent = sci(gasFee);
+    document.getElementById("pdp" + tier).textContent = sci(pdpFee);
+    document.getElementById("profit" + tier).textContent = sci(profit);
   }
 }
 
@@ -122,3 +123,4 @@ calculate();
 
 </body>
 </html>
+
