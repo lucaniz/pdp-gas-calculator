@@ -65,9 +65,13 @@
 
   <h1>PDP Gas & Costs Calculator</h1>
   <p class="description">
-    This calculator helps evaluate the gas costs, PDP fees, and profitability of Filecoin storage deals
-    based on on-chain activity. You can input expected deal price, FIL price, number of roots, and proof set size. 
-    The tool compares profitability across scenarios using High, Low, and Average base fees.
+    This calculator helps providing informations about the gas costs, fees, and profitability of Filecoin PDP 
+    based on on-chain activity. You can input expected deal price, FIL price, number of roots (within fixed ranges), and ProofSet size. 
+    The tool compares profitability across scenarios using High, Low, and Average (last 30 days) base fees values.
+    Gas consumption values are based on empirical measurements, which basically suggest that 
+    - `ProvePossession` for a proofset of 100 roots cost ~140M gas units
+    - ProofSet size does not affect the gas significantly, while the number of roots does (10x more roots costs ~10M more gas, and this is why we put the root number selection this way)
+    - reference for data: PDP Verifier Empirical gas and  https://filecoinproject.slack.com/archives/C0717TGU7V2/p1741801843702789
   </p>
 
   <h2>Parameters</h2>
