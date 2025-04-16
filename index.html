@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PDP Gas Calculator</title>
   <style>
     body {
@@ -43,98 +43,139 @@
 </head>
 <body>
 
-  <h2>Parameters</h2>
-
-  <!-- Gas Units Section -->
-  <table>
-    <tr>
-      <td colspan="4" class="subsection">Gas Units</td>
-    </tr>
-    <tr>
-      <th>Name</th>
-      <th>Value</th>
-    </tr>
-    <tr><td>100 roots</td><td>140,000,000</td></tr>
-    <tr><td>1000 roots</td><td>150,000,000</td></tr>
-    <tr><td>10000 roots</td><td>160,000,000</td></tr>
-    <tr><td>100000 roots</td><td>170,000,000</td></tr>
-  </table>
-
-  <!-- Base Fee Section -->
-  <table>
-    <tr>
-      <td colspan="4" class="subsection">Base Fee</td>
-    </tr>
-    <tr>
-      <th>Name</th>
-      <th>Value</th>
-    </tr>
-    <tr><td>High base fee (0.1 nanoFIL)</td><td>1.00E-10</td></tr>
-    <tr><td>Low base fee (100 attoFIL)</td><td>1.00E-16</td></tr>
-    <tr><td>Last 30days average</td><td>5.56E-12</td></tr>
-  </table>
-
-  <!-- Inputs Section -->
   <h2>Inputs</h2>
   <table>
     <tr><th>Name</th><th>Value</th></tr>
-    <tr><td>Deal price per TiB per month (USD)</td><td><input type="number" value="2" step="0.1"/></td></tr>
-    <tr><td>FIL price (USD)</td><td><input type="number" value="3" step="0.1"/></td></tr>
+    <tr>
+      <td>Deal price per TiB per month (USD)</td>
+      <td><input type="number" id="dealPrice" value="2" step="0.1" /></td>
+    </tr>
+    <tr>
+      <td>FIL price (USD)</td>
+      <td><input type="number" id="filPrice" value="3" step="0.1" /></td>
+    </tr>
     <tr>
       <td>Number of roots</td>
       <td>
-        <select>
-          <option selected>100</option>
-          <option>1000</option>
-          <option>10000</option>
-          <option selected>100000</option>
+        <select id="roots">
+          <option value="100">100</option>
+          <option value="1000">1000</option>
+          <option value="10000">10000</option>
+          <option value="100000" selected>100000</option>
         </select>
       </td>
     </tr>
-    <tr><td>ProofSet size (GiB)</td><td><input type="number" value="100.00" min="0.01" step="0.01"/></td></tr>
-    <tr><td>Number of proofs in a day</td><td><input type="number" value="1" min="1"/></td></tr>
+    <tr>
+      <td>ProofSet size (GiB)</td>
+      <td><input type="number" id="proofSize" value="100" step="0.01" min="0.01" /></td>
+    </tr>
+    <tr>
+      <td>Number of proofs in a day</td>
+      <td><input type="number" id="proofsPerDay" value="1" min="1" /></td>
+    </tr>
   </table>
 
-  <!-- Internal Math -->
   <h2>Internal Math</h2>
   <table>
     <tr><th>Name</th><th>Value</th></tr>
-    <tr><td>Reward per 24h per byte (USD)</td><td>6.06E-14</td></tr>
-    <tr><td>Reward per 24h per byte (FIL)</td><td>2.02E-14</td></tr>
-    <tr><td>Upper bound (5%), FIL</td><td>1.08E-04</td></tr>
-    <tr><td>Lower Bound (4%), FIL</td><td>8.63E-05</td></tr>
-    <tr><td>1%, FIL</td><td>2.16E-05</td></tr>
+    <tr><td>Reward per 24h per byte (USD)</td><td id="rewardUSD"></td></tr>
+    <tr><td>Reward per 24h per byte (FIL)</td><td id="rewardFIL"></td></tr>
+    <tr><td>Upper bound (5%), FIL</td><td id="upperBound"></td></tr>
+    <tr><td>Lower Bound (4%), FIL</td><td id="lowerBound"></td></tr>
+    <tr><td>1%, FIL</td><td id="onePercent"></td></tr>
   </table>
 
-  <!-- Outputs -->
   <h2>Outputs</h2>
   <table>
-    <tr>
-      <td></td>
-      <th>High base fee (0.1 nanoFIL)</th>
-      <th>Low base fee (100 attoFIL)</th>
-      <th>Last 30days average</th>
-    </tr>
-    <tr>
-      <td>Daily gas fee (FIL)</td>
-      <td>-3.23E+07</td>
-      <td>-3.23E+07</td>
-      <td>-3.23E+07</td>
-    </tr>
-    <tr>
-      <td>Daily pdp proof fee (FIL)</td>
-      <td>2.17E-05</td>
-      <td>2.17E-05</td>
-      <td>2.17E-05</td>
-    </tr>
-    <tr>
-      <td>Daily profit (per proofset, FIL)</td>
-      <td>3.23E+07</td>
-      <td>3.23E+07</td>
-      <td>3.23E+07</td>
-    </tr>
+    <tr><th></th><th>High base fee</th><th>Low base fee</th><th>30d avg base fee</th></tr>
+    <tr><td>Daily gas fee (FIL)</td>
+        <td id="gasHigh"></td><td id="gasLow"></td><td id="gasAvg"></td></tr>
+    <tr><td>Daily PDP proof fee (FIL)</td>
+        <td id="pdpHigh"></td><td id="pdpLow"></td><td id="pdpAvg"></td></tr>
+    <tr><td>Daily profit (FIL)</td>
+        <td id="profitHigh"></td><td id="profitLow"></td><td id="profitAvg"></td></tr>
   </table>
+
+<script>
+const baseFees = {
+  high: 1e-10,
+  low: 1e-16,
+  avg: 5.56e-12
+};
+
+const gasUnitsMap = {
+  100: 140000000,
+  1000: 150000000,
+  10000: 160000000,
+  100000: 170000000
+};
+
+function formatSci(n) {
+  return Number(n).toExponential(2);
+}
+
+function calculate() {
+  const dealPrice = parseFloat(document.getElementById("dealPrice").value);
+  const filPrice = parseFloat(document.getElementById("filPrice").value);
+  const roots = parseInt(document.getElementById("roots").value);
+  const proofSize = parseFloat(document.getElementById("proofSize").value);
+  const proofsPerDay = parseInt(document.getElementById("proofsPerDay").value);
+  const gasUnits = gasUnitsMap[roots];
+
+  const rewardUSD = dealPrice / (30 * 2 ** 40);
+  const rewardFIL = rewardUSD / filPrice;
+  const bytes = proofSize * 1024 ** 3;
+
+  const upperBound = 0.05 * bytes * rewardFIL;
+  const lowerBound = 0.04 * bytes * rewardFIL;
+  const onePercent = 0.01 * bytes * rewardFIL;
+
+  // Update Internal Math table
+  document.getElementById("rewardUSD").textContent = formatSci(rewardUSD);
+  document.getElementById("rewardFIL").textContent = formatSci(rewardFIL);
+  document.getElementById("upperBound").textContent = formatSci(upperBound);
+  document.getElementById("lowerBound").textContent = formatSci(lowerBound);
+  document.getElementById("onePercent").textContent = formatSci(onePercent);
+
+  // Calculate outputs
+  const logTerm = 10000000 * Math.log10(roots / gasUnits);
+
+  function dailyGasFee(baseFee) {
+    return (baseFee * gasUnits + logTerm) * proofsPerDay;
+  }
+
+  function pdpFee(gasFee) {
+    if (gasFee > upperBound) return 0;
+    if (gasFee > lowerBound) return (upperBound - gasFee) * proofsPerDay;
+    return onePercent * proofsPerDay;
+  }
+
+  function profit(gasFee, pdp) {
+    return rewardFIL * bytes - (gasFee + pdp);
+  }
+
+  ["high", "low", "avg"].forEach(tier => {
+    const gas = dailyGasFee(baseFees[tier]);
+    const pdp = pdpFee(gas);
+    const prof = profit(gas, pdp);
+    document.getElementById(`gas${capitalize(tier)}`).textContent = formatSci(gas);
+    document.getElementById(`pdp${capitalize(tier)}`).textContent = formatSci(pdp);
+    document.getElementById(`profit${capitalize(tier)}`).textContent = formatSci(prof);
+  });
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Event listeners
+document.querySelectorAll("input, select").forEach(input => {
+  input.addEventListener("input", calculate);
+});
+
+// Initial run
+calculate();
+</script>
 
 </body>
 </html>
-
