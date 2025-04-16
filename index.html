@@ -114,7 +114,8 @@ function calculate() {
   for (const tier in baseFees) {
     const baseFee = baseFees[tier];
 
-    const gasFeeSingle = baseFee * gasUnits + Math.log10(gasUnits / roots);
+    // ✅ FIXED log multiplier to match spreadsheet logic
+    const gasFeeSingle = baseFee * gasUnits + 1e-7 * Math.log10(gasUnits / roots);
     const gasFee = gasFeeSingle * proofsPerDay;
 
     let pdpFee = 0;
