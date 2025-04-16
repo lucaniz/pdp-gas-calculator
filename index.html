@@ -51,7 +51,7 @@
       <td colspan="4" class="subsection">Gas Units</td>
     </tr>
     <tr>
-      <th>Parameter</th>
+      <th>Name</th>
       <th>Value</th>
     </tr>
     <tr>
@@ -78,7 +78,7 @@
       <td colspan="4" class="subsection">Base Fee</td>
     </tr>
     <tr>
-      <th>Parameter</th>
+      <th>Name</th>
       <th>Value</th>
     </tr>
     <tr>
@@ -99,7 +99,7 @@
   <h2>Inputs</h2>
   <table>
     <tr>
-      <th>Parameter</th>
+      <th>Name</th>
       <th>Value</th>
     </tr>
     <tr>
@@ -130,6 +130,82 @@
       <td><input type="number" id="proofsPerDay" value="1" min="1" /></td>
     </tr>
   </table>
+
+  <!-- Internal Math Section -->
+  <h2>Internal Math</h2>
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+    </tr>
+    <tr>
+      <td>Reward per 24h per byte (USD)</td>
+      <td><span id="rewardUSD"></span></td>
+    </tr>
+    <tr>
+      <td>Reward per 24h per byte (FIL)</td>
+      <td><span id="rewardFIL"></span></td>
+    </tr>
+    <tr>
+      <td>Upper bound (5%), FIL</td>
+      <td><span id="upperBound"></span></td>
+    </tr>
+    <tr>
+      <td>Lower Bound (4%), FIL</td>
+      <td><span id="lowerBound"></span></td>
+    </tr>
+    <tr>
+      <td>1%, FIL</td>
+      <td><span id="onePercent"></span></td>
+    </tr>
+  </table>
+
+  <script>
+    // Get elements
+    const dealPrice = document.getElementById('dealPrice');
+    const filPrice = document.getElementById('filPrice');
+    const proofSize = document.getElementById('proofSize');
+    const rewardUSD = document.getElementById('rewardUSD');
+    const rewardFIL = document.getElementById('rewardFIL');
+    const upperBound = document.getElementById('upperBound');
+    const lowerBound = document.getElementById('lowerBound');
+    const onePercent = document.getElementById('onePercent');
+
+    // Update internal math on input change
+    function updateInternalMath() {
+      const dealPriceValue = parseFloat(dealPrice.value);
+      const filPriceValue = parseFloat(filPrice.value);
+      const proofSizeValue = parseFloat(proofSize.value);
+
+      // Calculate Reward per 24h per byte (USD)
+      const rewardPerByteUSD = dealPriceValue / (30 * Math.pow(2, 40));
+      rewardUSD.textContent = rewardPerByteUSD.toFixed(10);
+
+      // Calculate Reward per 24h per byte (FIL)
+      const rewardPerByteFIL = rewardPerByteUSD / filPriceValue;
+      rewardFIL.textContent = rewardPerByteFIL.toFixed(10);
+
+      // Calculate Upper Bound (5%), FIL
+      const upperBoundValue = 0.05 * (proofSizeValue * Math.pow(1024, 3)) * rewardPerByteFIL;
+      upperBound.textContent = upperBoundValue.toFixed(10);
+
+      // Calculate Lower Bound (4%), FIL
+      const lowerBoundValue = 0.04 * (proofSizeValue * Math.pow(1024, 3)) * rewardPerByteFIL;
+      lowerBound.textContent = lowerBoundValue.toFixed(10);
+
+      // Calculate 1% (FIL)
+      const onePercentValue = 0.01 * (proofSizeValue * Math.pow(1024, 3)) * rewardPerByteFIL;
+      onePercent.textContent = onePercentValue.toFixed(10);
+    }
+
+    // Add event listeners for updates
+    dealPrice.addEventListener('input', updateInternalMath);
+    filPrice.addEventListener('input', updateInternalMath);
+    proofSize.addEventListener('input', updateInternalMath);
+
+    // Initialize
+    updateInternalMath();
+  </script>
 
 </body>
 </html>
