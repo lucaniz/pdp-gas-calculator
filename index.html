@@ -1,18 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PDP Gas Calculator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f9f9f9;
       padding: 20px;
-    }
-    h2 {
-      margin-top: 40px;
-      color: #333;
     }
     table {
       border-collapse: collapse;
@@ -30,79 +26,61 @@
     th {
       background-color: #eee;
     }
-    .subsection {
-      background-color: #dbeeff;
-      font-weight: bold;
-      text-align: center;
-    }
-    input[type="number"], select {
+    input, select {
+      width: 120px;
       padding: 5px;
-      width: 100px;
+    }
+    h2 {
+      margin-top: 40px;
     }
   </style>
 </head>
 <body>
 
-  <h2>Inputs</h2>
-  <table>
-    <tr><th>Name</th><th>Value</th></tr>
-    <tr>
-      <td>Deal price per TiB per month (USD)</td>
-      <td><input type="number" id="dealPrice" value="2" step="0.1" /></td>
-    </tr>
-    <tr>
-      <td>FIL price (USD)</td>
-      <td><input type="number" id="filPrice" value="3" step="0.1" /></td>
-    </tr>
-    <tr>
-      <td>Number of roots</td>
-      <td>
-        <select id="roots">
-          <option value="100">100</option>
-          <option value="1000">1000</option>
-          <option value="10000">10000</option>
-          <option value="100000" selected>100000</option>
-        </select>
-      </td>
-    </tr>
-    <tr>
-      <td>ProofSet size (GiB)</td>
-      <td><input type="number" id="proofSize" value="100" step="0.01" min="0.01" /></td>
-    </tr>
-    <tr>
-      <td>Number of proofs in a day</td>
-      <td><input type="number" id="proofsPerDay" value="1" min="1" /></td>
-    </tr>
-  </table>
+<h2>Inputs</h2>
+<table>
+  <tr><th>Name</th><th>Value</th></tr>
+  <tr><td>Deal price per TiB per month (USD)</td><td><input type="number" id="dealPrice" value="2" step="0.1" /></td></tr>
+  <tr><td>FIL price (USD)</td><td><input type="number" id="filPrice" value="3" step="0.1" /></td></tr>
+  <tr>
+    <td>Number of roots</td>
+    <td>
+      <select id="roots">
+        <option value="100">100</option>
+        <option value="1000">1000</option>
+        <option value="10000">10000</option>
+        <option value="100000" selected>100000</option>
+      </select>
+    </td>
+  </tr>
+  <tr><td>ProofSet size (GiB)</td><td><input type="number" id="proofSize" value="100" step="0.01" min="0.01" /></td></tr>
+  <tr><td>Number of proofs in a day</td><td><input type="number" id="proofsPerDay" value="1" min="1" /></td></tr>
+</table>
 
-  <h2>Internal Math</h2>
-  <table>
-    <tr><th>Name</th><th>Value</th></tr>
-    <tr><td>Reward per 24h per byte (USD)</td><td id="rewardUSD"></td></tr>
-    <tr><td>Reward per 24h per byte (FIL)</td><td id="rewardFIL"></td></tr>
-    <tr><td>Upper bound (5%), FIL</td><td id="upperBound"></td></tr>
-    <tr><td>Lower Bound (4%), FIL</td><td id="lowerBound"></td></tr>
-    <tr><td>1%, FIL</td><td id="onePercent"></td></tr>
-  </table>
+<h2>Internal Math</h2>
+<table>
+  <tr><th>Name</th><th>Value</th></tr>
+  <tr><td>Reward per 24h per byte (USD)</td><td id="rewardUSD"></td></tr>
+  <tr><td>Reward per 24h per byte (FIL)</td><td id="rewardFIL"></td></tr>
+  <tr><td>Upper bound (5%), FIL</td><td id="upperBound"></td></tr>
+  <tr><td>Lower Bound (4%), FIL</td><td id="lowerBound"></td></tr>
+  <tr><td>1%, FIL</td><td id="onePercent"></td></tr>
+</table>
 
-  <h2>Outputs</h2>
-  <table>
-    <tr><th></th><th>High base fee</th><th>Low base fee</th><th>30d avg base fee</th></tr>
-    <tr><td>Daily gas fee (FIL)</td>
-        <td id="gasHigh"></td><td id="gasLow"></td><td id="gasAvg"></td></tr>
-    <tr><td>Daily PDP proof fee (FIL)</td>
-        <td id="pdpHigh"></td><td id="pdpLow"></td><td id="pdpAvg"></td></tr>
-    <tr><td>Daily profit (FIL)</td>
-        <td id="profitHigh"></td><td id="profitLow"></td><td id="profitAvg"></td></tr>
-  </table>
+<h2>Outputs</h2>
+<table>
+  <tr>
+    <th></th>
+    <th>High base fee</th>
+    <th>Low base fee</th>
+    <th>30d avg base fee</th>
+  </tr>
+  <tr><td>Daily gas fee (FIL)</td><td id="gasHigh"></td><td id="gasLow"></td><td id="gasAvg"></td></tr>
+  <tr><td>Daily PDP proof fee (FIL)</td><td id="pdpHigh"></td><td id="pdpLow"></td><td id="pdpAvg"></td></tr>
+  <tr><td>Daily profit (FIL)</td><td id="profitHigh"></td><td id="profitLow"></td><td id="profitAvg"></td></tr>
+</table>
 
 <script>
-const baseFees = {
-  high: 1e-10,
-  low: 1e-16,
-  avg: 5.56e-12
-};
-
 const gasUnitsMap = {
   100: 140000000,
   1000: 150000000,
@@ -110,11 +88,17 @@ const gasUnitsMap = {
   100000: 170000000
 };
 
-function formatSci(n) {
+const baseFees = {
+  High: 1e-10,
+  Low: 1e-16,
+  Avg: 5.56e-12
+};
+
+function sci(n) {
   return Number(n).toExponential(2);
 }
 
-function calculate() {
+function updateTables() {
   const dealPrice = parseFloat(document.getElementById("dealPrice").value);
   const filPrice = parseFloat(document.getElementById("filPrice").value);
   const roots = parseInt(document.getElementById("roots").value);
@@ -122,59 +106,47 @@ function calculate() {
   const proofsPerDay = parseInt(document.getElementById("proofsPerDay").value);
   const gasUnits = gasUnitsMap[roots];
 
-  const rewardUSD = dealPrice / (30 * 2 ** 40);
+  const rewardUSD = dealPrice / (30 * Math.pow(2, 40));
   const rewardFIL = rewardUSD / filPrice;
-  const bytes = proofSize * 1024 ** 3;
-
+  const bytes = proofSize * Math.pow(1024, 3);
   const upperBound = 0.05 * bytes * rewardFIL;
   const lowerBound = 0.04 * bytes * rewardFIL;
   const onePercent = 0.01 * bytes * rewardFIL;
 
-  // Update Internal Math table
-  document.getElementById("rewardUSD").textContent = formatSci(rewardUSD);
-  document.getElementById("rewardFIL").textContent = formatSci(rewardFIL);
-  document.getElementById("upperBound").textContent = formatSci(upperBound);
-  document.getElementById("lowerBound").textContent = formatSci(lowerBound);
-  document.getElementById("onePercent").textContent = formatSci(onePercent);
+  document.getElementById("rewardUSD").textContent = sci(rewardUSD);
+  document.getElementById("rewardFIL").textContent = sci(rewardFIL);
+  document.getElementById("upperBound").textContent = sci(upperBound);
+  document.getElementById("lowerBound").textContent = sci(lowerBound);
+  document.getElementById("onePercent").textContent = sci(onePercent);
 
-  // Calculate outputs
   const logTerm = 10000000 * Math.log10(roots / gasUnits);
 
-  function dailyGasFee(baseFee) {
-    return (baseFee * gasUnits + logTerm) * proofsPerDay;
-  }
+  for (const tier in baseFees) {
+    const baseFee = baseFees[tier];
+    const gasFee = (baseFee * gasUnits + logTerm) * proofsPerDay;
 
-  function pdpFee(gasFee) {
-    if (gasFee > upperBound) return 0;
-    if (gasFee > lowerBound) return (upperBound - gasFee) * proofsPerDay;
-    return onePercent * proofsPerDay;
-  }
+    let pdpFee = 0;
+    if (gasFee > upperBound) {
+      pdpFee = 0;
+    } else if (gasFee > lowerBound) {
+      pdpFee = (upperBound - gasFee) * proofsPerDay;
+    } else {
+      pdpFee = onePercent * proofsPerDay;
+    }
 
-  function profit(gasFee, pdp) {
-    return rewardFIL * bytes - (gasFee + pdp);
-  }
+    const profit = (rewardFIL * bytes) - (gasFee + pdpFee);
 
-  ["high", "low", "avg"].forEach(tier => {
-    const gas = dailyGasFee(baseFees[tier]);
-    const pdp = pdpFee(gas);
-    const prof = profit(gas, pdp);
-    document.getElementById(`gas${capitalize(tier)}`).textContent = formatSci(gas);
-    document.getElementById(`pdp${capitalize(tier)}`).textContent = formatSci(pdp);
-    document.getElementById(`profit${capitalize(tier)}`).textContent = formatSci(prof);
-  });
+    document.getElementById("gas" + tier).textContent = sci(gasFee);
+    document.getElementById("pdp" + tier).textContent = sci(pdpFee);
+    document.getElementById("profit" + tier).textContent = sci(profit);
+  }
 }
 
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-// Event listeners
-document.querySelectorAll("input, select").forEach(input => {
-  input.addEventListener("input", calculate);
+document.querySelectorAll("input, select").forEach(el => {
+  el.addEventListener("input", updateTables);
 });
 
-// Initial run
-calculate();
+updateTables();
 </script>
 
 </body>
