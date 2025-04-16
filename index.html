@@ -73,28 +73,27 @@ function calculate() {
   const roots = parseInt(document.getElementById("roots").value);
   const proofSize = parseFloat(document.getElementById("proofSize").value);
   const proofsPerDay = parseInt(document.getElementById("proofsPerDay").value);
-
   const gasUnits = gasUnitsMap[roots];
-  const bytes = proofSize * 1024 ** 3;
-  const rewardUSD = dealPrice / (30 * 2 ** 40);
+
+  const bytes = proofSize * Math.pow(1024, 3);
+  const rewardUSD = dealPrice / (30 * Math.pow(2, 40));
   const rewardFIL = rewardUSD / filPrice;
 
   const upperBound = 0.05 * bytes * rewardFIL;
   const lowerBound = 0.04 * bytes * rewardFIL;
   const onePercent = 0.01 * bytes * rewardFIL;
 
-  // Internal Math
   document.getElementById("rewardUSD").textContent = sci(rewardUSD);
   document.getElementById("rewardFIL").textContent = sci(rewardFIL);
   document.getElementById("upperBound").textContent = sci(upperBound);
   document.getElementById("lowerBound").textContent = sci(lowerBound);
   document.getElementById("onePercent").textContent = sci(onePercent);
 
-  const logTerm = 10000000 * Math.log10(roots / gasUnits);
-
   for (const tier in baseFees) {
     const baseFee = baseFees[tier];
-    const gasFee = (baseFee * gasUnits + logTerm) * proofsPerDay;
+
+    // 🔥 LOGIC FIXED HERE: Now each tier calculates FULL expression independently
+    const gasFee = (baseFee * gasUnits + 10000000 * Math.log10(roots / gasUnits)) * proofsPerDay;
 
     let pdpFee = 0;
     if (gasFee > upperBound) {
