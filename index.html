@@ -1,194 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDP Gas Cost Calculator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDP Gas Calculator – Params</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background: #f9f9f9;
       padding: 20px;
-      background-color: #f4f4f9;
     }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input {
-      padding: 5px;
-      width: 200px;
+    h2 {
+      margin-top: 30px;
+      margin-bottom: 10px;
     }
     table {
-      width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
-      font-size: 12px;
+      width: 100%;
+      margin-bottom: 30px;
+      background: white;
     }
     th, td {
       border: 1px solid #ccc;
-      padding: 6px;
-      text-align: right;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
     }
     th {
       background-color: #eee;
     }
-    td {
-      text-align: left;
-    }
-    .input-table td, th {
-      text-align: left;
-    }
-    .result-table td, th {
-      text-align: right;
-    }
   </style>
 </head>
 <body>
-  <h1>PDP Gas Cost & Reward Calculator</h1>
-  <h2>Parameters</h2>
-  <table class="input-table">
-    <tr>
-      <th>Parameter</th>
-      <th>Value</th>
-    </tr>
-    <tr>
-      <td>Deal Price per TiB per month (USD)</td>
-      <td><input type="number" id="dealPrice" value="2"></td>
-    </tr>
-    <tr>
-      <td>FIL Price (USD)</td>
-      <td><input type="number" id="filPrice" value="3"></td>
-    </tr>
-    <tr>
-      <td>Reward per 24h per byte (FIL)</td>
-      <td><input type="number" id="rewardFIL" value="2.02e-14" disabled></td>
-    </tr>
-    <tr>
-      <td>Reward per 24h per byte (USD)</td>
-      <td><input type="number" id="rewardUSD" value="6.06e-14" disabled></td>
-    </tr>
-    <tr>
-      <td>Number of Roots</td>
-      <td><input type="number" id="roots" value="100"></td>
-    </tr>
-    <tr>
-      <td>Storage Duration (months)</td>
-      <td><input type="number" id="months" value="1"></td>
-    </tr>
-  </table>
 
-  <h2>Output</h2>
-  <table class="result-table" id="result">
+  <h2>Params (Read-Only)</h2>
+
+  <table>
     <thead>
       <tr>
-        <th>Size</th>
-        <th>Bytes</th>
-        <th>PDP Fee (5%)</th>
-        <th>PDP Fee (4%)</th>
-        <th>PDP Fee (1%)</th>
-        <th>Gas Cost (High)</th>
-        <th>Gas Cost (Low)</th>
-        <th>Gas Cost (Avg)</th>
-        <th>Reward (USD)</th>
-        <th>Deal Income</th>
-        <th>% Gas / Reward</th>
-        <th>% PDP / Reward</th>
-        <th>Profit (High)</th>
-        <th>Profit (Low)</th>
-        <th>Profit (Avg)</th>
+        <th>Parameter</th>
+        <th>Value</th>
+        <th>Unit</th>
+        <th>Description</th>
       </tr>
     </thead>
-    <tbody></tbody>
+    <tbody>
+      <tr><td>Gas per 100 roots</td><td>140,000,000</td><td>Gas</td><td>Gas used per 100 PDP roots</td></tr>
+      <tr><td>High Base Fee</td><td>1e-10</td><td>FIL</td><td>Estimated high base fee</td></tr>
+      <tr><td>Low Base Fee</td><td>1e-16</td><td>FIL</td><td>Estimated low base fee</td></tr>
+      <tr><td>Avg Base Fee</td><td>5.56e-12</td><td>FIL</td><td>Estimated average base fee</td></tr>
+      <tr><td>Standard PDP Fee %</td><td>5%</td><td>%</td><td>Standard PDP fee (of total reward)</td></tr>
+      <tr><td>Deal size (TiB)</td><td>1</td><td>TiB</td><td>Default deal size</td></tr>
+      <tr><td>Sector Size (TiB)</td><td>32</td><td>TiB</td><td>Sector size used in calculations</td></tr>
+      <tr><td>Days per Month</td><td>30</td><td>Days</td><td>Used for monthly reward conversion</td></tr>
+      <tr><td>Reward per day per byte (FIL)</td><td>2.02e-14</td><td>FIL/byte</td><td>Daily reward rate per byte</td></tr>
+      <tr><td>FIL Price</td><td>3</td><td>USD</td><td>Current FIL price</td></tr>
+    </tbody>
   </table>
 
-  <script>
-    const sizes = [
-      { label: "1000 MiB", bytes: 1048576000 },
-      { label: "10000 MiB", bytes: 10485760000 },
-      { label: "32 GiB", bytes: 34359738368 },
-      { label: "50 GiB", bytes: 53687091200 },
-      { label: "100 GiB", bytes: 107374182400 },
-      { label: "1 TiB", bytes: 1099511627776 },
-      { label: "2500 GiB", bytes: 2684354560000 }
-    ];
-
-    function calculate() {
-      const dealPrice = parseFloat(document.getElementById("dealPrice").value);
-      const filPrice = parseFloat(document.getElementById("filPrice").value);
-      const rewardFIL = parseFloat(document.getElementById("rewardFIL").value);
-      const rewardUSD = rewardFIL / (30 * Math.pow(2, 40)); // Calculate Reward per byte in USD based on FIL value
-      const roots = parseFloat(document.getElementById("roots").value);
-      const months = parseFloat(document.getElementById("months").value);
-
-      const baseFees = {
-        high: 1e-10,
-        low: 1e-16,
-        avg: 5.56e-12
-      };
-
-      const gasPer100Roots = 140000000;
-      const gasPerRoot = gasPer100Roots / 100;
-      const gasUsed = roots * gasPerRoot;
-
-      const tbody = document.querySelector("#result tbody");
-      tbody.innerHTML = "";
-
-      sizes.forEach(({ label, bytes }) => {
-        const reward = rewardUSD * bytes * roots;
-        const fees = {
-          five: 0.05 * reward,
-          four: 0.04 * reward,
-          one: 0.01 * reward
-        };
-
-        const gasCosts = {
-          high: gasUsed * baseFees.high * filPrice,
-          low: gasUsed * baseFees.low * filPrice,
-          avg: gasUsed * baseFees.avg * filPrice
-        };
-
-        const dealIncome = (bytes / 1099511627776) * dealPrice * months;
-
-        const percentGas = {
-          high: (gasCosts.high / reward) * 100,
-          low: (gasCosts.low / reward) * 100,
-          avg: (gasCosts.avg / reward) * 100
-        };
-
-        const percentPDP = (fees.five / reward) * 100;
-
-        const profits = {
-          high: reward - fees.five - gasCosts.high,
-          low: reward - fees.five - gasCosts.low,
-          avg: reward - fees.five - gasCosts.avg
-        };
-
-        const row = `
-          <tr>
-            <td>${label}</td>
-            <td>${bytes.toExponential(2)}</td>
-            <td>${fees.five.toExponential(2)}</td>
-            <td>${fees.four.toExponential(2)}</td>
-            <td>${fees.one.toExponential(2)}</td>
-            <td>${gasCosts.high.toExponential(2)}</td>
-            <td>${gasCosts.low.toExponential(2)}</td>
-            <td>${gasCosts.avg.toExponential(2)}</td>
-            <td>${reward.toExponential(2)}</td>
-            <td>${dealIncome.toExponential(2)}</td>
-            <td>${percentGas.avg.toFixed(2)}%</td>
-            <td>${percentPDP.toFixed(2)}%</td>
-            <td>${profits.high.toExponential(2)}</td>
-            <td>${profits.low.toExponential(2)}</td>
-            <td>${profits.avg.toExponential(2)}</td>
-          </tr>`;
-
-        tbody.insertAdjacentHTML("beforeend", row);
-      });
-    }
-
-    // Run calculation on page load
-    window.onload = calculate;
-
-  </script>
 </body>
 </html>
