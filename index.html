@@ -75,9 +75,6 @@
   PDP Gas & Costs Calculator
 </h1>
 
-
-
-
 <div class="description">
   <p>
     This calculator aims to provide insights into the gas costs, fees, and profitability of Filecoin PDP
@@ -90,6 +87,8 @@
       <li><code>ProvePossession</code> for a proofset of 100 roots costs approximately 140M gas units.</li>
       <li>ProofSet size does not significantly impact gas usage.</li>
       <li>Increasing the number of roots increases cost by ~10M per 10x more roots.</li>
+      <li><code>NextProvingPeriod</code> is set to 55,000,000 gas units. This is an approximation based on observed data (see spreadsheet linked below).</li>
+      <li>We are <strong>not</strong> including the gas cost of <code>AddRoots</code>. This calculator is intended as a first approximation and considers only "fixed gas costs." The gas for <code>AddRoots</code> depends heavily on how many and how frequently roots are added to a proofSet — which varies by PDP SP strategy and business model.</li>
     </ul>
   </p>
   <p>
@@ -158,6 +157,7 @@
     <tr><td>1%, FIL</td><td id="onePercent"></td></tr>
   </table>
 </div>
+
 <table>
   <tr>
     <th>Description</th>
@@ -211,6 +211,8 @@ const baseFees = {
   Avg: 5.56e-12
 };
 
+const nextProvingPeriodGas = 55000000;
+
 function sci(n) {
   return Number(n).toExponential(2).replace('E', 'e');
 }
@@ -222,7 +224,8 @@ function calculate() {
   const proofSize = parseFloat(document.getElementById("proofSize").value);
   const proofsPerDay = parseInt(document.getElementById("proofsPerDay").value);
 
-  const gasUnits = gasUnitsMap[roots];
+  const baseGas = gasUnitsMap[roots];
+  const totalGasPerProof = baseGas + nextProvingPeriodGas;
   const bytes = proofSize * 1024 ** 3;
   const rewardUSD = dealPrice / (30 * 2 ** 40);
   const rewardFIL = rewardUSD / filPrice;
@@ -239,8 +242,7 @@ function calculate() {
 
   for (const tier in baseFees) {
     const baseFee = baseFees[tier];
-
-    const gasFeeSingle = baseFee * gasUnits + 1e-7 * Math.log10(gasUnits / roots);
+    const gasFeeSingle = baseFee * totalGasPerProof;
     const gasFee = gasFeeSingle * proofsPerDay;
 
     let pdpFee = 0;
@@ -276,5 +278,3 @@ calculate();
 
 </body>
 </html>
-
-
