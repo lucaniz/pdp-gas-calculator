@@ -110,7 +110,7 @@
   <!-- Read-only per-GiB per-proof PDP fee -->
   <tr>
     <td>PDP fee per GiB per proof (FIL)</td>
-    <td><input type="number" id="pdpPerGiBPerProof" value="2.24609375e-7" step="1e-9" readonly /></td>
+    <td><input type="number" id="pdpPerGiBPerProof" value="0.000000224609375" step="1e-9" readonly /></td>
   </tr>
 </table>
 
@@ -175,7 +175,11 @@ const gasUnitsMap = {
 const baseFees = { High: 1e-10, Low: 1e-16, Avg: 5.56e-12 };
 const nextProvingPeriodGas = 55000000;
 
-function sci(n){return !isFinite(n)?"0":Number(n).toExponential(2).replace("E","e");}
+// Show values in normal decimal notation
+function sci(n){
+  if (!isFinite(n)) return "0";
+  return n.toFixed(6); // show up to 6 decimals
+}
 
 function calculate(){
   const dealPrice=parseFloat(document.getElementById("dealPrice").value);
@@ -219,6 +223,7 @@ function calculate(){
     document.getElementById("profitUSDMonth"+tier).textContent=isFinite(profitUSDMonth)?profitUSDMonth.toFixed(4):"0.0000";
   }
 }
+
 document.querySelectorAll("input, select").forEach(el=>el.addEventListener("input",calculate));
 calculate();
 </script>
