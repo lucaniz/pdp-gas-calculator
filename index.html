@@ -19,9 +19,7 @@
       border-left: 5px solid #00acc1;
       margin-bottom: 30px;
     }
-    .description ul {
-      margin: 10px 0 10px 20px;
-    }
+    .description ul { margin: 10px 0 10px 20px; }
     .description code {
       background-color: #f1f1f1;
       padding: 2px 5px;
@@ -69,19 +67,8 @@
 
 <div class="description">
   <p>
-    This calculator aims to provide insights into the gas costs, fees, and profitability of Filecoin PDP
-    based on on-chain activity. You can input the expected deal price, FIL price, number of roots (within fixed ranges), 
-    and ProofSet size. The tool compares profitability across different scenarios using High, Low, and Average (March 2025) base fee values.
-  </p>
-  <p>
-    Gas consumption estimates are based on empirical measurements. In essence:
-    <ul>
-      <li><code>ProvePossession</code> for a proofset of 100 roots costs approximately 140M gas units.</li>
-      <li>ProofSet size does not significantly impact gas usage.</li>
-      <li>Increasing the number of roots increases cost by ~10M per 10x more roots.</li>
-      <li><code>NextProvingPeriod</code> is set to 55,000,000 gas units. This is an approximation based on observed data (see spreadsheet linked below).</li>
-      <li>We are <strong>not</strong> including the gas cost of <code>AddRoots</code>. This calculator considers only "fixed gas costs."</li>
-    </ul>
+    This calculator provides insights into Filecoin PDP gas costs, fees, and profitability.
+    Adjust deal price, FIL price, number of roots, and proofset size. Gas values are based on empirical data.
   </p>
 </div>
 
@@ -93,7 +80,7 @@
   <tr><td><code>ProvePossession</code> for 1000 roots ProofSet</td><td>150,000,000</td></tr>
   <tr><td><code>ProvePossession</code> for 10000 roots ProofSet</td><td>160,000,000</td></tr>
   <tr><td><code>ProvePossession</code> for 100000 roots ProofSet</td><td>170,000,000</td></tr>
-  <tr><td><code>NextProvingPeriod</code> </td><td>55,000,000</td></tr>
+  <tr><td><code>NextProvingPeriod</code></td><td>55,000,000</td></tr>
 </table>
 
 <table>
@@ -120,14 +107,14 @@
   <tr><td>ProofSet size (GiB)</td><td><input type="number" id="proofSize" value="100" step="0.01" /></td></tr>
   <tr><td>Number of proofs in a day</td><td><input type="number" id="proofsPerDay" value="1" /></td></tr>
 
-  <!-- NEW: per-GiB, per-proof PDP fee in FIL -->
+  <!-- Read-only per-GiB per-proof PDP fee -->
   <tr>
     <td>PDP fee per GiB per proof (FIL)</td>
-    <td><input type="number" id="pdpPerGiBPerProof" value="2.24609375e-7" step="1e-9" /></td>
+    <td><input type="number" id="pdpPerGiBPerProof" value="2.24609375e-7" step="1e-9" readonly /></td>
   </tr>
 </table>
 
-<div style="display: none;">
+<div style="display:none;">
   <h2>Internal Math</h2>
   <table>
     <tr><th>Description</th><th>Value</th></tr>
@@ -144,7 +131,7 @@
     <th>Description</th>
     <th class="high">High base fee</th>
     <th class="low">Low base fee</th>
-    <th class="avg">30d avg base fee</th>
+    <th class="avg">30-day avg base fee</th>
   </tr>
   <tr>
     <td>Daily gas fee (FIL, all proofs)</td>
@@ -185,80 +172,54 @@ const gasUnitsMap = {
   10000: 160000000,
   100000: 170000000
 };
-
-const baseFees = {
-  High: 1e-10,
-  Low: 1e-16,
-  Avg: 5.56e-12
-};
-
+const baseFees = { High: 1e-10, Low: 1e-16, Avg: 5.56e-12 };
 const nextProvingPeriodGas = 55000000;
 
-function sci(n) {
-  if (!isFinite(n)) return "0";
-  return Number(n).toExponential(2).replace('E', 'e');
-}
+function sci(n){return !isFinite(n)?"0":Number(n).toExponential(2).replace("E","e");}
 
-function calculate() {
-  const dealPrice = parseFloat(document.getElementById("dealPrice").value);
-  const filPrice = parseFloat(document.getElementById("filPrice").value);
-  const roots = parseInt(document.getElementById("roots").value);
-  const proofSize = parseFloat(document.getElementById("proofSize").value); // GiB
-  const proofsPerDay = parseInt(document.getElementById("proofsPerDay").value);
-  const pdpPerGiBPerProof = parseFloat(document.getElementById("pdpPerGiBPerProof").value || "0"); // FIL
+function calculate(){
+  const dealPrice=parseFloat(document.getElementById("dealPrice").value);
+  const filPrice=parseFloat(document.getElementById("filPrice").value);
+  const roots=parseInt(document.getElementById("roots").value);
+  const proofSize=parseFloat(document.getElementById("proofSize").value);
+  const proofsPerDay=parseInt(document.getElementById("proofsPerDay").value);
+  const pdpPerGiBPerProof=parseFloat(document.getElementById("pdpPerGiBPerProof").value||"0");
 
-  const baseGas = gasUnitsMap[roots];
-  const totalGasPerProof = baseGas + nextProvingPeriodGas;
+  const baseGas=gasUnitsMap[roots];
+  const totalGasPerProof=baseGas+nextProvingPeriodGas;
+  const bytes=proofSize*1024**3;
+  const rewardUSD=dealPrice/(30*2**40);
+  const rewardFIL=rewardUSD/filPrice;
 
-  // Reward calcs (unchanged)
-  const bytes = proofSize * 1024 ** 3;
-  const rewardUSD = dealPrice / (30 * 2 ** 40);
-  const rewardFIL = rewardUSD / filPrice;
+  const upperBound=0.05*bytes*rewardFIL;
+  const lowerBound=0.04*bytes*rewardFIL;
+  const onePercent=0.01*bytes*rewardFIL;
 
-  // Internal (still shown in hidden section)
-  const upperBound = 0.05 * bytes * rewardFIL;
-  const lowerBound = 0.04 * bytes * rewardFIL;
-  const onePercent = 0.01 * bytes * rewardFIL;
+  document.getElementById("rewardUSD").textContent=sci(rewardUSD);
+  document.getElementById("rewardFIL").textContent=sci(rewardFIL);
+  document.getElementById("upperBound").textContent=sci(upperBound);
+  document.getElementById("lowerBound").textContent=sci(lowerBound);
+  document.getElementById("onePercent").textContent=sci(onePercent);
 
-  document.getElementById("rewardUSD").textContent = sci(rewardUSD);
-  document.getElementById("rewardFIL").textContent = sci(rewardFIL);
-  document.getElementById("upperBound").textContent = sci(upperBound);
-  document.getElementById("lowerBound").textContent = sci(lowerBound);
-  document.getElementById("onePercent").textContent = sci(onePercent);
+  const pdpDailyFee=pdpPerGiBPerProof*proofSize*proofsPerDay; // FIL/day
 
-  // Spreadsheet model: PDP fee is per-GiB per proof, scaled by ProofSet size and proofs/day
-  const pdpDailyFee = pdpPerGiBPerProof * proofSize * proofsPerDay; // FIL/day
+  for(const tier in baseFees){
+    const baseFee=baseFees[tier];
+    const gasFeeSingle=baseFee*totalGasPerProof;
+    const gasFee=gasFeeSingle*proofsPerDay;
+    const profit=rewardFIL*bytes-gasFee-pdpDailyFee;
 
-  for (const tier in baseFees) {
-    const baseFee = baseFees[tier];
+    document.getElementById("gas"+tier).textContent=sci(gasFee);
+    document.getElementById("pdp"+tier).textContent=sci(pdpDailyFee);
+    document.getElementById("profit"+tier).textContent=sci(profit);
 
-    // Gas fee depends on base fee tier
-    const gasFeeSingle = baseFee * totalGasPerProof; // FIL per proof
-    const gasFee = gasFeeSingle * proofsPerDay;      // FIL per day
-
-    // Profit = total daily reward (FIL) − gas − PDP (spreadsheet model)
-    const profit = rewardFIL * bytes - gasFee - pdpDailyFee;
-
-    // Fill table
-    document.getElementById("gas" + tier).textContent = sci(gasFee);
-
-    // PDP fee is the same across tiers now
-    document.getElementById("pdp" + tier).textContent = sci(pdpDailyFee);
-
-    document.getElementById("profit" + tier).textContent = sci(profit);
-
-    const profitUSD = profit * filPrice;
-    const profitUSDMonth = profitUSD * 30;
-
-    document.getElementById("profitUSD" + tier).textContent = isFinite(profitUSD) ? profitUSD.toFixed(4) : "0.0000";
-    document.getElementById("profitUSDMonth" + tier).textContent = isFinite(profitUSDMonth) ? profitUSDMonth.toFixed(4) : "0.0000";
+    const profitUSD=profit*filPrice;
+    const profitUSDMonth=profitUSD*30;
+    document.getElementById("profitUSD"+tier).textContent=isFinite(profitUSD)?profitUSD.toFixed(4):"0.0000";
+    document.getElementById("profitUSDMonth"+tier).textContent=isFinite(profitUSDMonth)?profitUSDMonth.toFixed(4):"0.0000";
   }
 }
-
-document.querySelectorAll("input, select").forEach(el => {
-  el.addEventListener("input", calculate);
-});
-
+document.querySelectorAll("input, select").forEach(el=>el.addEventListener("input",calculate));
 calculate();
 </script>
 
