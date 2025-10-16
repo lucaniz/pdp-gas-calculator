@@ -11,13 +11,8 @@
       padding: 20px;
       line-height: 1.6;
     }
-    h1 {
-      color: #003049;
-    }
-    h2 {
-      margin-top: 40px;
-      color: #333;
-    }
+    h1 { color: #003049; }
+    h2 { margin-top: 40px; color: #333; }
     .description {
       background: #e0f7fa;
       padding: 15px 20px;
@@ -59,10 +54,7 @@
       font-weight: bold;
       font-size: 16px;
     }
-    input, select {
-      padding: 5px;
-      width: 100px;
-    }
+    input, select { padding: 5px; width: 160px; }
   </style>
 </head>
 <body>
@@ -88,24 +80,7 @@
       <li>ProofSet size does not significantly impact gas usage.</li>
       <li>Increasing the number of roots increases cost by ~10M per 10x more roots.</li>
       <li><code>NextProvingPeriod</code> is set to 55,000,000 gas units. This is an approximation based on observed data (see spreadsheet linked below).</li>
-      <li>We are <strong>not</strong> including the gas cost of <code>AddRoots</code>. This calculator is intended as a first approximation and considers only "fixed gas costs." The gas for <code>AddRoots</code> depends heavily on how many and how frequently roots are added to a proofSet — which varies by PDP SP strategy and business model.</li>
-    </ul>
-  </p>
-  <p>
-    Data references:
-    <ul>
-      <li>
-        PDP Verifier empirical gas data:
-        <a href="https://docs.google.com/spreadsheets/d/1zQ8jLi_JnQk0l89ql3qRpBZjHay8IwmVte3rQi2lvvc/edit?gid=0#gid=0" target="_blank">
-          Google Sheet
-        </a>
-      </li>
-      <li>
-        Filecoin Slack discussion:
-        <a href="https://filecoinproject.slack.com/archives/C0717TGU7V2/p1741801843702789" target="_blank">
-          Slack message
-        </a>
-      </li>
+      <li>We are <strong>not</strong> including the gas cost of <code>AddRoots</code>. This calculator considers only "fixed gas costs."</li>
     </ul>
   </p>
 </div>
@@ -144,6 +119,12 @@
   </td></tr>
   <tr><td>ProofSet size (GiB)</td><td><input type="number" id="proofSize" value="100" step="0.01" /></td></tr>
   <tr><td>Number of proofs in a day</td><td><input type="number" id="proofsPerDay" value="1" /></td></tr>
+
+  <!-- NEW: per-GiB, per-proof PDP fee in FIL -->
+  <tr>
+    <td>PDP fee per GiB per proof (FIL)</td>
+    <td><input type="number" id="pdpPerGiBPerProof" value="2.24609375e-7" step="1e-9" /></td>
+  </tr>
 </table>
 
 <div style="display: none;">
@@ -214,6 +195,7 @@ const baseFees = {
 const nextProvingPeriodGas = 55000000;
 
 function sci(n) {
+  if (!isFinite(n)) return "0";
   return Number(n).toExponential(2).replace('E', 'e');
 }
 
@@ -221,15 +203,19 @@ function calculate() {
   const dealPrice = parseFloat(document.getElementById("dealPrice").value);
   const filPrice = parseFloat(document.getElementById("filPrice").value);
   const roots = parseInt(document.getElementById("roots").value);
-  const proofSize = parseFloat(document.getElementById("proofSize").value);
+  const proofSize = parseFloat(document.getElementById("proofSize").value); // GiB
   const proofsPerDay = parseInt(document.getElementById("proofsPerDay").value);
+  const pdpPerGiBPerProof = parseFloat(document.getElementById("pdpPerGiBPerProof").value || "0"); // FIL
 
   const baseGas = gasUnitsMap[roots];
   const totalGasPerProof = baseGas + nextProvingPeriodGas;
+
+  // Reward calcs (unchanged)
   const bytes = proofSize * 1024 ** 3;
   const rewardUSD = dealPrice / (30 * 2 ** 40);
   const rewardFIL = rewardUSD / filPrice;
 
+  // Internal (still shown in hidden section)
   const upperBound = 0.05 * bytes * rewardFIL;
   const lowerBound = 0.04 * bytes * rewardFIL;
   const onePercent = 0.01 * bytes * rewardFIL;
@@ -240,32 +226,32 @@ function calculate() {
   document.getElementById("lowerBound").textContent = sci(lowerBound);
   document.getElementById("onePercent").textContent = sci(onePercent);
 
+  // Spreadsheet model: PDP fee is per-GiB per proof, scaled by ProofSet size and proofs/day
+  const pdpDailyFee = pdpPerGiBPerProof * proofSize * proofsPerDay; // FIL/day
+
   for (const tier in baseFees) {
     const baseFee = baseFees[tier];
-    const gasFeeSingle = baseFee * totalGasPerProof;
-    const gasFee = gasFeeSingle * proofsPerDay;
 
-    let pdpFee = 0;
-    if (gasFee > upperBound) {
-      pdpFee = 0;
-    } else if (gasFee > lowerBound) {
-      pdpFee = (upperBound - gasFee);
-    } else {
-      pdpFee = onePercent;
-    }
+    // Gas fee depends on base fee tier
+    const gasFeeSingle = baseFee * totalGasPerProof; // FIL per proof
+    const gasFee = gasFeeSingle * proofsPerDay;      // FIL per day
 
-    pdpFee *= proofsPerDay;
-    const profit = rewardFIL * bytes - gasFee - pdpFee;
+    // Profit = total daily reward (FIL) − gas − PDP (spreadsheet model)
+    const profit = rewardFIL * bytes - gasFee - pdpDailyFee;
 
+    // Fill table
     document.getElementById("gas" + tier).textContent = sci(gasFee);
-    document.getElementById("pdp" + tier).textContent = sci(pdpFee);
+
+    // PDP fee is the same across tiers now
+    document.getElementById("pdp" + tier).textContent = sci(pdpDailyFee);
+
     document.getElementById("profit" + tier).textContent = sci(profit);
 
     const profitUSD = profit * filPrice;
     const profitUSDMonth = profitUSD * 30;
 
-    document.getElementById("profitUSD" + tier).textContent = profitUSD.toFixed(4);
-    document.getElementById("profitUSDMonth" + tier).textContent = profitUSDMonth.toFixed(4);
+    document.getElementById("profitUSD" + tier).textContent = isFinite(profitUSD) ? profitUSD.toFixed(4) : "0.0000";
+    document.getElementById("profitUSDMonth" + tier).textContent = isFinite(profitUSDMonth) ? profitUSDMonth.toFixed(4) : "0.0000";
   }
 }
 
