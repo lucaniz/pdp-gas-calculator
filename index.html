@@ -46,6 +46,7 @@
     .high { background-color: #ffe0e0; }
     .low { background-color: #e0ffe0; }
     .avg { background-color: #e0f0ff; }
+    .avg2 { background-color: #f9f0ff; }
     .section-title {
       padding: 6px 10px;
       background-color: #b3e5fc;
@@ -89,6 +90,7 @@
   <tr><td>High base fee (0.1 nanoFIL)</td><td>1e-10</td></tr>
   <tr><td>Low base fee (100 attoFIL)</td><td>1e-16</td></tr>
   <tr><td>March 2025 average</td><td>5.56e-12</td></tr>
+  <tr><td>30-day average (Sep 20–Oct 20, 2025)</td><td>2.51e-14</td></tr>
 </table>
 
 <h2>Inputs</h2>
@@ -131,37 +133,43 @@
     <th>Description</th>
     <th class="high">High base fee</th>
     <th class="low">Low base fee</th>
-    <th class="avg">30-day avg base fee</th>
+    <th class="avg">March 2025 avg base fee</th>
+    <th class="avg2">30-day avg base fee (Sep 20–Oct 20, 2025)</th>
   </tr>
   <tr>
     <td>Daily gas fee (FIL, all proofs)</td>
     <td class="high" id="gasHigh"></td>
     <td class="low" id="gasLow"></td>
-    <td class="avg" id="gasAvg"></td>
+    <td class="avg" id="gasMar2025"></td>
+    <td class="avg2" id="gasAvg30d"></td>
   </tr>
   <tr>
     <td>Daily PDP proof fee (FIL, all proofs)</td>
     <td class="high" id="pdpHigh"></td>
     <td class="low" id="pdpLow"></td>
-    <td class="avg" id="pdpAvg"></td>
+    <td class="avg" id="pdpMar2025"></td>
+    <td class="avg2" id="pdpAvg30d"></td>
   </tr>
   <tr>
     <td>Daily profit (FIL)</td>
     <td class="high" id="profitHigh"></td>
     <td class="low" id="profitLow"></td>
-    <td class="avg" id="profitAvg"></td>
+    <td class="avg" id="profitMar2025"></td>
+    <td class="avg2" id="profitAvg30d"></td>
   </tr>
   <tr>
     <td>Daily profit (USD)</td>
     <td class="high" id="profitUSDHigh"></td>
     <td class="low" id="profitUSDLow"></td>
-    <td class="avg" id="profitUSDAvg"></td>
+    <td class="avg" id="profitUSDMar2025"></td>
+    <td class="avg2" id="profitUSDAvg30d"></td>
   </tr>
   <tr>
     <td>Monthly profit (USD)</td>
     <td class="high" id="profitUSDMonthHigh"></td>
     <td class="low" id="profitUSDMonthLow"></td>
-    <td class="avg" id="profitUSDMonthAvg"></td>
+    <td class="avg" id="profitUSDMonthMar2025"></td>
+    <td class="avg2" id="profitUSDMonthAvg30d"></td>
   </tr>
 </table>
 
@@ -172,59 +180,83 @@ const gasUnitsMap = {
   10000: 160000000,
   100000: 170000000
 };
-const baseFees = { High: 1e-10, Low: 1e-16, Avg: 5.56e-12 };
+
+// Order here determines the column order in the results
+const baseFees = {
+  High: 1e-10,
+  Low: 1e-16,
+  Mar2025: 5.56e-12,
+  Avg30d: 2.51e-14 // Sep 20–Oct 20, 2025
+};
+
 const nextProvingPeriodGas = 55000000;
 
 // Show values in normal decimal notation
 function sci(n){
   if (!isFinite(n)) return "0";
-  return n.toFixed(6); // show up to 6 decimals
+  return n.toFixed(6); // adjust decimals as you prefer
 }
 
 function calculate(){
-  const dealPrice=parseFloat(document.getElementById("dealPrice").value);
-  const filPrice=parseFloat(document.getElementById("filPrice").value);
-  const roots=parseInt(document.getElementById("roots").value);
-  const proofSize=parseFloat(document.getElementById("proofSize").value);
-  const proofsPerDay=parseInt(document.getElementById("proofsPerDay").value);
-  const pdpPerGiBPerProof=parseFloat(document.getElementById("pdpPerGiBPerProof").value||"0");
+  const dealPrice = parseFloat(document.getElementById("dealPrice").value);
+  const filPrice  = parseFloat(document.getElementById("filPrice").value);
+  const roots     = parseInt(document.getElementById("roots").value);
+  const proofSize = parseFloat(document.getElementById("proofSize").value);
+  const proofsPerDay = parseInt(document.getElementById("proofsPerDay").value);
+  const pdpPerGiBPerProof = parseFloat(document.getElementById("pdpPerGiBPerProof").value || "0");
 
-  const baseGas=gasUnitsMap[roots];
-  const totalGasPerProof=baseGas+nextProvingPeriodGas;
-  const bytes=proofSize*1024**3;
-  const rewardUSD=dealPrice/(30*2**40);
-  const rewardFIL=rewardUSD/filPrice;
+  const baseGas = gasUnitsMap[roots];
+  const totalGasPerProof = baseGas + nextProvingPeriodGas;
 
-  const upperBound=0.05*bytes*rewardFIL;
-  const lowerBound=0.04*bytes*rewardFIL;
-  const onePercent=0.01*bytes*rewardFIL;
+  const bytes = proofSize * 1024 ** 3;
+  const rewardUSD = dealPrice / (30 * 2 ** 40);
+  const rewardFIL = rewardUSD / filPrice;
 
-  document.getElementById("rewardUSD").textContent=sci(rewardUSD);
-  document.getElementById("rewardFIL").textContent=sci(rewardFIL);
-  document.getElementById("upperBound").textContent=sci(upperBound);
-  document.getElementById("lowerBound").textContent=sci(lowerBound);
-  document.getElementById("onePercent").textContent=sci(onePercent);
+  const upperBound = 0.05 * bytes * rewardFIL;
+  const lowerBound = 0.04 * bytes * rewardFIL;
+  const onePercent = 0.01 * bytes * rewardFIL;
 
-  const pdpDailyFee=pdpPerGiBPerProof*proofSize*proofsPerDay; // FIL/day
+  document.getElementById("rewardUSD").textContent = sci(rewardUSD);
+  document.getElementById("rewardFIL").textContent = sci(rewardFIL);
+  document.getElementById("upperBound").textContent = sci(upperBound);
+  document.getElementById("lowerBound").textContent = sci(lowerBound);
+  document.getElementById("onePercent").textContent = sci(onePercent);
 
-  for(const tier in baseFees){
-    const baseFee=baseFees[tier];
-    const gasFeeSingle=baseFee*totalGasPerProof;
-    const gasFee=gasFeeSingle*proofsPerDay;
-    const profit=rewardFIL*bytes-gasFee-pdpDailyFee;
+  const pdpDailyFee = pdpPerGiBPerProof * proofSize * proofsPerDay; // FIL/day
 
-    document.getElementById("gas"+tier).textContent=sci(gasFee);
-    document.getElementById("pdp"+tier).textContent=sci(pdpDailyFee);
-    document.getElementById("profit"+tier).textContent=sci(profit);
+  for (const tier in baseFees) {
+    const baseFee = baseFees[tier];
+    const gasFeeSingle = baseFee * totalGasPerProof; // FIL/proof
+    const gasFee = gasFeeSingle * proofsPerDay;      // FIL/day
+    const profit = rewardFIL * bytes - gasFee - pdpDailyFee;
 
-    const profitUSD=profit*filPrice;
-    const profitUSDMonth=profitUSD*30;
-    document.getElementById("profitUSD"+tier).textContent=isFinite(profitUSD)?profitUSD.toFixed(4):"0.0000";
-    document.getElementById("profitUSDMonth"+tier).textContent=isFinite(profitUSDMonth)?profitUSDMonth.toFixed(4):"0.0000";
+    // Map tier -> element suffixes used in the table
+    const idMap = {
+      High:     "",
+      Low:      "",
+      Mar2025:  "Mar2025",
+      Avg30d:   "Avg30d"
+    };
+
+    const suffix = tier === "High" ? "High"
+                  : tier === "Low" ? "Low"
+                  : idMap[tier];
+
+    document.getElementById("gas" + suffix).textContent = sci(gasFee);
+    document.getElementById("pdp" + suffix).textContent = sci(pdpDailyFee);
+    document.getElementById("profit" + suffix).textContent = sci(profit);
+
+    const profitUSD = profit * filPrice;
+    const profitUSDMonth = profitUSD * 30;
+
+    document.getElementById("profitUSD" + suffix).textContent =
+      isFinite(profitUSD) ? profitUSD.toFixed(4) : "0.0000";
+    document.getElementById("profitUSDMonth" + suffix).textContent =
+      isFinite(profitUSDMonth) ? profitUSDMonth.toFixed(4) : "0.0000";
   }
 }
 
-document.querySelectorAll("input, select").forEach(el=>el.addEventListener("input",calculate));
+document.querySelectorAll("input, select").forEach(el => el.addEventListener("input", calculate));
 calculate();
 </script>
 
