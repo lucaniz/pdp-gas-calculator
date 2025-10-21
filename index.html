@@ -114,18 +114,8 @@
 </table>
 
 <script>
-const gasUnitsMap = {
-  100: 140000000,
-  1000: 150000000,
-  10000: 160000000,
-  100000: 170000000
-};
-const baseFees = {
-  High: 1e-10,
-  Low: 1e-16,
-  Mar2025: 5.56e-12,
-  Avg30d: 2.51e-14
-};
+const gasUnitsMap = { 100: 140000000, 1000: 150000000, 10000: 160000000, 100000: 170000000 };
+const baseFees = { High: 1e-10, Low: 1e-16, Mar2025: 5.56e-12, Avg30d: 2.51e-14 };
 const nextProvingPeriodGas = 55000000;
 
 function fmt(n, d=6){ return isFinite(n)?Number(n).toFixed(d):"0"; }
@@ -138,14 +128,14 @@ function calculate(){
   const proofsPerDay = parseInt(document.getElementById("proofsPerDay").value);
   const pdpPerGiBPerProof = parseFloat(document.getElementById("pdpPerGiBPerProof").value);
 
-  // average root size in MB (decimal MB)
-  const avgRootSizeMB = (proofSizeGiB / roots) * 1000;
-  document.getElementById("avgRootSize").value = fmt(avgRootSizeMB, 3);
+  // Average root size (MB) as integer
+  const avgRootSizeMB = Math.round((proofSizeGiB / roots) * 1000);
+  document.getElementById("avgRootSize").value = avgRootSizeMB;
 
-  // bytes in proofset (binary GiB)
+  // bytes in proofset (binary)
   const bytes = proofSizeGiB * 1024 ** 3;
 
-  // reward per byte per day (USD → FIL)
+  // reward per byte (TiB = 2^40)
   const rewardUSD_per_byte = dealPrice / (30 * 2 ** 40);
   const rewardFIL_per_byte = rewardUSD_per_byte / filPrice;
   const rewardFIL = rewardFIL_per_byte * bytes;
