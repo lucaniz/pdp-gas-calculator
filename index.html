@@ -69,7 +69,40 @@
 <div class="description">
   <p>
     This calculator provides insights into Filecoin PDP gas costs, fees, and profitability.
-    Adjust deal price, FIL price, number of roots, and proofset size. Gas values are based on empirical data.
+    Adjust deal price, FIL price, number of roots, and proofset size. Gas values are based on empirical data and recent on-chain analysis.
+  </p>
+  <p>
+    Gas consumption estimates are based on empirical measurements from community data and PDP Verifier runs. In essence:
+    <ul>
+      <li><code>ProvePossession</code> for a proofset of 100 roots costs approximately 140M gas units.</li>
+      <li>ProofSet size does not significantly impact gas usage.</li>
+      <li>Increasing the number of roots increases cost by ~10M per 10× more roots.</li>
+      <li><code>NextProvingPeriod</code> is set to 55,000,000 gas units (approximation from observed data).</li>
+      <li>The gas cost of <code>AddRoots</code> is excluded as it depends heavily on strategy and frequency.</li>
+    </ul>
+  </p>
+  <p>
+    Data references:
+    <ul>
+      <li>
+        PDP Verifier empirical gas data:
+        <a href="https://docs.google.com/spreadsheets/d/1zQ8jLi_JnQk0l89ql3qRpBZjHay8IwmVte3rQi2lvvc/edit?gid=0#gid=0" target="_blank">
+          Google Sheet
+        </a>
+      </li>
+      <li>
+        Base fee data sourced from
+        <a href="https://dashboard.starboard.ventures/dashboard/analytics#transactionsusage-network-fee" target="_blank">
+          Starboard
+        </a>.
+      </li>
+      <li>
+        Discussion and methodology:
+        <a href="https://filecoinproject.slack.com/archives/C0717TGU7V2/p1741801843702789" target="_blank">
+          Filecoin Slack thread
+        </a>
+      </li>
+    </ul>
   </p>
 </div>
 
@@ -107,6 +140,8 @@
     </select>
   </td></tr>
   <tr><td>ProofSet size (GiB)</td><td><input type="number" id="proofSize" value="100" step="0.01" /></td></tr>
+  <!-- NEW: Average root size (MB) -->
+  <tr><td>Average root size (MB)</td><td><input type="number" id="avgRootSize" value="0" readonly /></td></tr>
   <tr><td>Number of proofs in a day</td><td><input type="number" id="proofsPerDay" value="1" /></td></tr>
 
   <!-- Read-only per-GiB per-proof PDP fee -->
@@ -115,18 +150,6 @@
     <td><input type="number" id="pdpPerGiBPerProof" value="0.000000224609375" step="1e-9" readonly /></td>
   </tr>
 </table>
-
-<div style="display:none;">
-  <h2>Internal Math</h2>
-  <table>
-    <tr><th>Description</th><th>Value</th></tr>
-    <tr><td>Reward per 24h per byte (USD)</td><td id="rewardUSD"></td></tr>
-    <tr><td>Reward per 24h per byte (FIL)</td><td id="rewardFIL"></td></tr>
-    <tr><td>Upper bound (5%), FIL</td><td id="upperBound"></td></tr>
-    <tr><td>Lower Bound (4%), FIL</td><td id="lowerBound"></td></tr>
-    <tr><td>1%, FIL</td><td id="onePercent"></td></tr>
-  </table>
-</div>
 
 <table>
   <tr>
@@ -181,20 +204,18 @@ const gasUnitsMap = {
   100000: 170000000
 };
 
-// Order here determines the column order in the results
 const baseFees = {
   High: 1e-10,
   Low: 1e-16,
   Mar2025: 5.56e-12,
-  Avg30d: 2.51e-14 // Sep 20–Oct 20, 2025
+  Avg30d: 2.51e-14
 };
 
 const nextProvingPeriodGas = 55000000;
 
-// Show values in normal decimal notation
 function sci(n){
   if (!isFinite(n)) return "0";
-  return n.toFixed(6); // adjust decimals as you prefer
+  return n.toFixed(6);
 }
 
 function calculate(){
@@ -205,6 +226,10 @@ function calculate(){
   const proofsPerDay = parseInt(document.getElementById("proofsPerDay").value);
   const pdpPerGiBPerProof = parseFloat(document.getElementById("pdpPerGiBPerProof").value || "0");
 
+  // ✅ Average root size (MB)
+  const avgRootSizeMB = (proofSize / roots) * 1000;
+  document.getElementById("avgRootSize").value = avgRootSizeMB.toFixed(3);
+
   const baseGas = gasUnitsMap[roots];
   const totalGasPerProof = baseGas + nextProvingPeriodGas;
 
@@ -212,35 +237,17 @@ function calculate(){
   const rewardUSD = dealPrice / (30 * 2 ** 40);
   const rewardFIL = rewardUSD / filPrice;
 
-  const upperBound = 0.05 * bytes * rewardFIL;
-  const lowerBound = 0.04 * bytes * rewardFIL;
-  const onePercent = 0.01 * bytes * rewardFIL;
-
-  document.getElementById("rewardUSD").textContent = sci(rewardUSD);
-  document.getElementById("rewardFIL").textContent = sci(rewardFIL);
-  document.getElementById("upperBound").textContent = sci(upperBound);
-  document.getElementById("lowerBound").textContent = sci(lowerBound);
-  document.getElementById("onePercent").textContent = sci(onePercent);
-
-  const pdpDailyFee = pdpPerGiBPerProof * proofSize * proofsPerDay; // FIL/day
+  const pdpDailyFee = pdpPerGiBPerProof * proofSize * proofsPerDay;
 
   for (const tier in baseFees) {
     const baseFee = baseFees[tier];
-    const gasFeeSingle = baseFee * totalGasPerProof; // FIL/proof
-    const gasFee = gasFeeSingle * proofsPerDay;      // FIL/day
+    const gasFeeSingle = baseFee * totalGasPerProof;
+    const gasFee = gasFeeSingle * proofsPerDay;
     const profit = rewardFIL * bytes - gasFee - pdpDailyFee;
 
-    // Map tier -> element suffixes used in the table
-    const idMap = {
-      High:     "",
-      Low:      "",
-      Mar2025:  "Mar2025",
-      Avg30d:   "Avg30d"
-    };
-
-    const suffix = tier === "High" ? "High"
-                  : tier === "Low" ? "Low"
-                  : idMap[tier];
+    const suffix = tier === "High" ? "High" :
+                   tier === "Low" ? "Low" :
+                   tier === "Mar2025" ? "Mar2025" : "Avg30d";
 
     document.getElementById("gas" + suffix).textContent = sci(gasFee);
     document.getElementById("pdp" + suffix).textContent = sci(pdpDailyFee);
@@ -248,11 +255,8 @@ function calculate(){
 
     const profitUSD = profit * filPrice;
     const profitUSDMonth = profitUSD * 30;
-
-    document.getElementById("profitUSD" + suffix).textContent =
-      isFinite(profitUSD) ? profitUSD.toFixed(4) : "0.0000";
-    document.getElementById("profitUSDMonth" + suffix).textContent =
-      isFinite(profitUSDMonth) ? profitUSDMonth.toFixed(4) : "0.0000";
+    document.getElementById("profitUSD" + suffix).textContent = isFinite(profitUSD) ? profitUSD.toFixed(4) : "0.0000";
+    document.getElementById("profitUSDMonth" + suffix).textContent = isFinite(profitUSDMonth) ? profitUSDMonth.toFixed(4) : "0.0000";
   }
 }
 
